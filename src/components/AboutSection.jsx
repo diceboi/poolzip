@@ -15,11 +15,16 @@ function WaveRow({ invertPhase = false, offsetX = 0 }) {
     return () => clearInterval(id);
   }, []);
   return (
-    <div className="overflow-hidden" style={{ width: 96, height: 18, marginLeft: offsetX }}>
+    <div
+      className="overflow-hidden"
+      style={{ width: 96, height: 18, marginLeft: offsetX }}
+    >
       <svg
         viewBox={`0 0 ${119.85 * 2} 14.47`}
         style={{
-          width: "200%", height: "100%", display: "block",
+          width: "200%",
+          height: "100%",
+          display: "block",
           transform: `translateX(${frame === 0 ? 0 : -HALF_WL}px)`,
           transition: "none",
         }}
@@ -36,36 +41,42 @@ function WaveDeco() {
   return (
     <div className="flex flex-col gap-1.5">
       <WaveRow invertPhase={false} offsetX={-10} />
-      <WaveRow invertPhase={true}  offsetX={10} />
+      <WaveRow invertPhase={true} offsetX={10} />
     </div>
   );
 }
 
 // ─── Photos ───────────────────────────────────────────────────────────────────
 const PHOTOS = [
-  { src: "/references/LAKESIDE-22.webp",         label: "Lakeside projekt",         rot: -8 },
-  { src: "/references/GRES-1.webp",              label: "Gres projekt",             rot:  0 },
-  { src: "/references/LOMBARD-PAVILION-30.webp", label: "Lombard Pavilion projekt", rot:  8 },
+  { src: "/references/LAKESIDE-22.webp", label: "Lakeside projekt", rot: -8 },
+  { src: "/references/GRES-1.webp", label: "Gres projekt", rot: 0 },
+  {
+    src: "/references/LOMBARD-PAVILION-30.webp",
+    label: "Lombard Pavilion projekt",
+    rot: 8,
+  },
 ];
 
 // ─── Desktop layout constants (Uniformly scaled up to fill container) ─────────
-const SIDE_W   = 420;
-const SIDE_H   = 315;
-const CTR_W    = 550;
-const CTR_H    = 412;
-const SPACING  = 320; // px between card centres
+const SIDE_W = 420;
+const SIDE_H = 315;
+const CTR_W = 550;
+const CTR_H = 412;
+const SPACING = 320; // px between card centres
 
 export default function AboutSection() {
-  const [visible,   setVisible]   = useState(false);
+  const [visible, setVisible] = useState(false);
   // Desktop: hovered card index | Mobile: active (tapped) card index
-  const [hovered,   setHovered]   = useState(null);
+  const [hovered, setHovered] = useState(null);
   const [mobileActive, setMobileActive] = useState(1); // default: center card
   const sectionRef = useRef(null);
 
   // Scroll entrance
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true);
+      },
       { threshold: 0.1 },
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
@@ -73,8 +84,8 @@ export default function AboutSection() {
   }, []);
 
   // Card dimensions per index
-  const cw = (i) => i === 1 ? CTR_W : SIDE_W;
-  const ch = (i) => i === 1 ? CTR_H : SIDE_H;
+  const cw = (i) => (i === 1 ? CTR_W : SIDE_W);
+  const ch = (i) => (i === 1 ? CTR_H : SIDE_H);
 
   const stackH = CTR_H + 100;
 
@@ -85,15 +96,18 @@ export default function AboutSection() {
   //  -1  → left peek: partially off-screen left
   //  +1  → right peek: partially off-screen right
   // others → hidden further off-screen
-  const mobileCardW = typeof window !== "undefined" ? Math.min(window.innerWidth - 32, 340) : 320;
+  const mobileCardW =
+    typeof window !== "undefined" ? Math.min(window.innerWidth - 32, 340) : 320;
   const mobileCardH = Math.round(mobileCardW * 0.72);
   const PEEK_OFFSET = "87%"; // how much of card is off-screen when peeking
 
   const getMobileTransform = (i) => {
     const diff = i - mobileActive;
-    if (diff === 0)  return `translateX(-50%) rotate(0deg) scale(1)`;
-    if (diff === -1) return `translateX(calc(-50% - ${PEEK_OFFSET})) rotate(-5deg)`;
-    if (diff === 1)  return `translateX(calc(-50% + ${PEEK_OFFSET})) rotate(5deg)`;
+    if (diff === 0) return `translateX(-50%) rotate(0deg) scale(1)`;
+    if (diff === -1)
+      return `translateX(calc(-50% - ${PEEK_OFFSET})) rotate(-5deg)`;
+    if (diff === 1)
+      return `translateX(calc(-50% + ${PEEK_OFFSET})) rotate(5deg)`;
     // further cards: hidden off-screen
     return diff < 0
       ? `translateX(calc(-50% - 200%)) rotate(-10deg)`
@@ -103,40 +117,47 @@ export default function AboutSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-white py-20 md:py-32 overflow-hidden"
+      className="relative bg-white lg:pb-32 pb-20 overflow-hidden"
     >
       <div className="max-w-6xl mx-auto px-6 flex flex-col items-center gap-14">
-
         {/* ══ DESKTOP: Fan — uniformly scaled cards spanning full container ══════ */}
         <div
           className="relative hidden md:flex items-center justify-center w-full"
           style={{ height: stackH }}
         >
           {/* Left wave deco — hanging outside the container */}
-          <div className="absolute hidden xl:block" style={{
-            left: `calc(50% - ${SPACING + SIDE_W / 2 + 75}px)`,
-            top: "72%", transform: "translateY(-50%)",
-          }}>
+          <div
+            className="absolute hidden xl:block"
+            style={{
+              left: `calc(50% - ${SPACING + SIDE_W / 2 + 75}px)`,
+              top: "72%",
+              transform: "translateY(-50%)",
+            }}
+          >
             <WaveDeco />
           </div>
           {/* Right wave deco — hanging outside the container */}
-          <div className="absolute hidden xl:block" style={{
-            left: `calc(50% + ${SPACING + SIDE_W / 2 + 30}px)`,
-            top: "28%", transform: "translateY(-50%)",
-          }}>
+          <div
+            className="absolute hidden xl:block"
+            style={{
+              left: `calc(50% + ${SPACING + SIDE_W / 2 + 30}px)`,
+              top: "28%",
+              transform: "translateY(-50%)",
+            }}
+          >
             <WaveDeco />
           </div>
 
           {PHOTOS.map((photo, i) => {
-            const isHov   = hovered === i;
+            const isHov = hovered === i;
             const isOther = hovered !== null && !isHov;
             const w = cw(i);
             const h = ch(i);
             // Fixed `left` — never changes (prevents mouse-escape loop).
             // Scale up in place on hover (no translateX to centre).
             const baseScale = i === 1 ? 1.04 : 1.0;
-            const hovScale  = i === 1 ? 1.25 : 1.22;
-            const baseLeft  = `calc(50% - ${w / 2}px + ${(i - 1) * SPACING}px)`;
+            const hovScale = i === 1 ? 1.25 : 1.22;
+            const baseLeft = `calc(50% - ${w / 2}px + ${(i - 1) * SPACING}px)`;
 
             return (
               <div
@@ -151,20 +172,27 @@ export default function AboutSection() {
                   transform: visible
                     ? `translateY(-50%) rotate(${isHov ? 0 : photo.rot}deg) scale(${isHov ? hovScale : baseScale})`
                     : `translateY(-50%) translateY(36px) rotate(${photo.rot}deg) scale(${baseScale})`,
-                  opacity:   visible ? (isOther ? 0.45 : 1) : 0,
-                  zIndex:    isHov ? 100 : (i === 1 ? 20 : i === 0 ? 10 : 15),
+                  opacity: visible ? (isOther ? 0.45 : 1) : 0,
+                  zIndex: isHov ? 100 : i === 1 ? 20 : i === 0 ? 10 : 15,
                   transition: [
                     "transform 0.38s cubic-bezier(0.34,1.56,0.64,1)", // spring
                     "opacity 0.3s ease",
                     !visible && `opacity 0.65s ease ${i * 0.12}s`,
-                  ].filter(Boolean).join(", "),
+                  ]
+                    .filter(Boolean)
+                    .join(", "),
                   cursor: "pointer",
                   willChange: "transform, opacity",
                 }}
               >
                 <div
                   className="rounded-[24px] shadow-2xl"
-                  style={{ padding: 8, background: "#244491", width: w, height: h }}
+                  style={{
+                    padding: 8,
+                    background: "#244491",
+                    width: w,
+                    height: h,
+                  }}
                 >
                   <div className="rounded-[18px] overflow-hidden w-full h-full">
                     <Image
@@ -193,7 +221,11 @@ export default function AboutSection() {
             const diff = i - mobileActive;
             const isActive = diff === 0;
             const opacity = visible
-              ? (Math.abs(diff) > 1 ? 0 : diff === 0 ? 1 : 0.7)
+              ? Math.abs(diff) > 1
+                ? 0
+                : diff === 0
+                  ? 1
+                  : 0.7
               : 0;
 
             return (
@@ -213,7 +245,9 @@ export default function AboutSection() {
                     "transform 0.45s cubic-bezier(0.4,0,0.2,1)",
                     "opacity 0.35s ease",
                     !visible && `opacity 0.6s ease ${i * 0.1}s`,
-                  ].filter(Boolean).join(", "),
+                  ]
+                    .filter(Boolean)
+                    .join(", "),
                   cursor: isActive ? "default" : "pointer",
                   willChange: "transform, opacity",
                 }}
@@ -255,10 +289,10 @@ export default function AboutSection() {
                 onClick={() => setMobileActive(i)}
                 className="rounded-full transition-all duration-300"
                 style={{
-                  width:      mobileActive === i ? 20 : 8,
-                  height:     8,
+                  width: mobileActive === i ? 20 : 8,
+                  height: 8,
                   background: mobileActive === i ? "#244491" : "#244491",
-                  opacity:    mobileActive === i ? 1 : 0.3,
+                  opacity: mobileActive === i ? 1 : 0.3,
                 }}
                 aria-label={`${i + 1}. kép`}
               />
@@ -271,7 +305,7 @@ export default function AboutSection() {
           className="text-center max-w-2xl mt-6"
           style={{
             transition: "opacity 0.8s ease 0.35s, transform 0.8s ease 0.35s",
-            opacity:   visible ? 1 : 0,
+            opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(24px)",
           }}
         >
@@ -288,14 +322,13 @@ export default function AboutSection() {
             A Poolzip a tökéletes aranyközépút: nem rontja el a kertet, mint egy
             robusztus polikarbonát fedés, és nem tekeri a koszos faleveleket a
             vízbe, mint a rolós megoldások. Ez egy letisztult, feszes
-            ponyvarendszer, amit egyetlen mozdulattal, pillanatok alatt bezárhat.
-            Nemcsak kristálytisztan és melegen tartja a vizet, de olyan erős is,
-            hogy simán elbírja a rászaladó gyerekeket vagy a háziállatokat.
-            Prémium megjelenés és 100%-os családi nyugalom – a luxuskategóriánál
-            jóval barátibb áron.
+            ponyvarendszer, amit egyetlen mozdulattal, pillanatok alatt
+            bezárhat. Nemcsak kristálytisztan és melegen tartja a vizet, de
+            olyan erős is, hogy simán elbírja a rászaladó gyerekeket vagy a
+            háziállatokat. Prémium megjelenés és 100%-os családi nyugalom – a
+            luxuskategóriánál jóval barátibb áron.
           </p>
         </div>
-
       </div>
     </section>
   );

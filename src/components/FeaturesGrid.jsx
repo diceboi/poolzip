@@ -113,7 +113,7 @@ export default function FeaturesGrid() {
     <section
       id="elonyok"
       ref={sectionRef}
-      className="py-12 sm:py-16 md:py-20 bg-white relative overflow-hidden"
+      className="py-12 sm:py-16 md:py-20 bg-white relative overflow-hidden bg-[#F3FCFF]"
     >
       <div className="max-w-[1140px] mx-auto px-4 sm:px-6">
         {/* Section Header (Compact vertical rhythm so photo & slider fit on screen) */}
