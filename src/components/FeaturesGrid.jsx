@@ -274,25 +274,29 @@ export default function FeaturesGrid() {
                         isHighlight ? "bg-[#F28C48]" : "bg-[#D4EDFC]"
                       }`}
                     >
-                      <div
-                        style={{ fontFamily: "Gotham, sans-serif" }}
-                        className={`text-[9px] sm:text-[9.5px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full w-fit mb-1 border-none transition-colors duration-200 ${
-                          isHighlight
-                            ? "bg-white text-[#F28C48]"
-                            : "bg-white text-[#244491] shadow-xs"
-                        }`}
-                      >
-                        {feat.tag}
-                      </div>
+                      <div className="flex flex-col gap-1">
+                        <div
+                          style={{ fontFamily: "Gotham, sans-serif" }}
+                          className={`text-[9px] sm:text-[9.5px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full w-fit mb-1 border-none transition-colors duration-200 ${
+                            isHighlight
+                              ? "bg-white text-[#F28C48]"
+                              : "bg-white text-[#244491] shadow-xs"
+                          }`}
+                        >
+                          {feat.tag}
+                        </div>
 
-                      <h3
-                        style={{ fontFamily: "'Active', cursive, sans-serif" }}
-                        className={`text-lg sm:text-xl md:text-[24px] font-normal leading-tight mb-1 transition-colors duration-200 ${
-                          isHighlight ? "text-white" : "text-[#244491]"
-                        }`}
-                      >
-                        {feat.title}
-                      </h3>
+                        <h3
+                          style={{
+                            fontFamily: "'Active', cursive, sans-serif",
+                          }}
+                          className={`text-lg sm:text-xl md:text-[24px] font-normal leading-tight mb-1 transition-colors duration-200 ${
+                            isHighlight ? "text-white" : "text-[#244491]"
+                          }`}
+                        >
+                          {feat.title}
+                        </h3>
+                      </div>
 
                       <p
                         style={{ fontFamily: "Gotham, sans-serif" }}
