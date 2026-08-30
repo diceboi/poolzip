@@ -48,12 +48,12 @@ const PHOTOS = [
   { src: "/references/LOMBARD-PAVILION-30.webp", label: "Lombard Pavilion projekt", rot:  8 },
 ];
 
-// ─── Desktop layout constants ─────────────────────────────────────────────────
-const SIDE_W   = 300;
-const SIDE_H   = 225;
-const CTR_W    = 390;
-const CTR_H    = 292;
-const SPACING  = 230; // px between card centres
+// ─── Desktop layout constants (Uniformly scaled up to fill container) ─────────
+const SIDE_W   = 420;
+const SIDE_H   = 315;
+const CTR_W    = 550;
+const CTR_H    = 412;
+const SPACING  = 320; // px between card centres
 
 export default function AboutSection() {
   const [visible,   setVisible]   = useState(false);
@@ -107,21 +107,21 @@ export default function AboutSection() {
     >
       <div className="max-w-6xl mx-auto px-6 flex flex-col items-center gap-14">
 
-        {/* ══ DESKTOP: Fan — each card scales in place on hover ══════════ */}
+        {/* ══ DESKTOP: Fan — uniformly scaled cards spanning full container ══════ */}
         <div
           className="relative hidden md:flex items-center justify-center w-full"
           style={{ height: stackH }}
         >
-          {/* Left wave deco */}
-          <div className="absolute hidden lg:block" style={{
-            left: `calc(50% - ${SPACING + SIDE_W / 2 + 60}px)`,
+          {/* Left wave deco — hanging outside the container */}
+          <div className="absolute hidden xl:block" style={{
+            left: `calc(50% - ${SPACING + SIDE_W / 2 + 75}px)`,
             top: "72%", transform: "translateY(-50%)",
           }}>
             <WaveDeco />
           </div>
-          {/* Right wave deco */}
-          <div className="absolute hidden lg:block" style={{
-            left: `calc(50% + ${SPACING + SIDE_W / 2 + 18}px)`,
+          {/* Right wave deco — hanging outside the container */}
+          <div className="absolute hidden xl:block" style={{
+            left: `calc(50% + ${SPACING + SIDE_W / 2 + 30}px)`,
             top: "28%", transform: "translateY(-50%)",
           }}>
             <WaveDeco />
@@ -134,8 +134,8 @@ export default function AboutSection() {
             const h = ch(i);
             // Fixed `left` — never changes (prevents mouse-escape loop).
             // Scale up in place on hover (no translateX to centre).
-            const baseScale = i === 1 ? 1.06 : 1.0;
-            const hovScale  = i === 1 ? 1.72 : 1.65;
+            const baseScale = i === 1 ? 1.04 : 1.0;
+            const hovScale  = i === 1 ? 1.25 : 1.22;
             const baseLeft  = `calc(50% - ${w / 2}px + ${(i - 1) * SPACING}px)`;
 
             return (
@@ -163,10 +163,10 @@ export default function AboutSection() {
                 }}
               >
                 <div
-                  className="rounded-2xl shadow-2xl"
-                  style={{ padding: 6, background: "#244491", width: w, height: h }}
+                  className="rounded-[24px] shadow-2xl"
+                  style={{ padding: 8, background: "#244491", width: w, height: h }}
                 >
-                  <div className="rounded-xl overflow-hidden w-full h-full">
+                  <div className="rounded-[18px] overflow-hidden w-full h-full">
                     <Image
                       src={photo.src}
                       alt={photo.label}
