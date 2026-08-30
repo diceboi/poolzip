@@ -112,7 +112,7 @@ export default function Comparison() {
           {COMPARISON_CARDS.map((card, idx) => (
             <div
               key={card.title}
-              className={`w-full max-w-[370px] lg:max-w-none lg:w-[380px] flex flex-col rounded-[32px] p-6 sm:p-8 ${card.bgColor} ${card.zIndex} ${card.desktopScale} relative transition-all duration-300 hover:-translate-y-2.5 cursor-pointer ${
+              className={`w-full max-w-[370px] lg:max-w-none lg:w-[380px] flex flex-col rounded-[32px] ${card.bgColor} ${card.zIndex} ${card.desktopScale} relative transition-all duration-300 hover:-translate-y-2.5 cursor-pointer ${
                 card.isWinner
                   ? "shadow-[0_20px_50px_-10px_rgba(242,140,72,0.45)] hover:shadow-[0_25px_65px_-8px_rgba(242,140,72,0.65)] ring-1 ring-[#F28C48]/40"
                   : "shadow-none lg:shadow-xl hover:shadow-2xl"
@@ -134,8 +134,8 @@ export default function Comparison() {
                 </div>
               )}
 
-              {/* Photo Preview */}
-              <div className="rounded-2xl overflow-hidden mb-6 relative aspect-[16/10] w-full shadow-sm bg-black/10">
+              {/* Photo Preview - Full width at top, rounded to match card corners */}
+              <div className="rounded-t-[32px] overflow-hidden relative aspect-[16/10] w-full shadow-xs bg-black/10 flex-shrink-0">
                 <Image
                   src={card.image}
                   alt={card.alt}
@@ -146,42 +146,45 @@ export default function Comparison() {
                 {/* Subtle category badge on photo */}
                 <div
                   style={{ fontFamily: "Gotham, sans-serif" }}
-                  className={`absolute top-3 left-3 ${card.badgeBg} backdrop-blur-md px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider shadow-sm`}
+                  className={`absolute top-3.5 left-3.5 ${card.badgeBg} backdrop-blur-md px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider shadow-sm`}
                 >
                   {card.badge}
                 </div>
               </div>
 
-              {/* Card Title in Active font */}
-              <h3
-                style={{ fontFamily: "'Active', cursive, sans-serif" }}
-                className={`text-2xl sm:text-[26px] ${card.titleColor} text-center mb-6 font-normal tracking-wide`}
-              >
-                {card.title}
-              </h3>
+              {/* Card Content with proper padding */}
+              <div className="p-6 sm:p-7 pt-5 sm:pt-6 flex flex-col flex-1">
+                {/* Card Title in Active font */}
+                <h3
+                  style={{ fontFamily: "'Active', cursive, sans-serif" }}
+                  className={`text-2xl sm:text-[26px] ${card.titleColor} text-center mb-5 font-normal tracking-wide`}
+                >
+                  {card.title}
+                </h3>
 
-              {/* Text Points with solid dividing lines and leading dots */}
-              <div
-                style={{ fontFamily: "Gotham, sans-serif" }}
-                className={`divide-y divide-solid ${card.dividerColor} flex-1 ${card.textColor} text-xs sm:text-[13px] leading-relaxed font-light`}
-              >
-                {card.points.map((point, pIdx) => (
-                  <div
-                    key={pIdx}
-                    className={`flex items-start gap-2.5 ${
-                      pIdx === 0
-                        ? "pb-3.5"
-                        : pIdx === card.points.length - 1
-                          ? "pt-3.5"
-                          : "py-3.5"
-                    }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${card.dotColor} flex-shrink-0 mt-1.5`}
-                    />
-                    <p className="flex-1">{point}</p>
-                  </div>
-                ))}
+                {/* Text Points with solid dividing lines and leading dots */}
+                <div
+                  style={{ fontFamily: "Gotham, sans-serif" }}
+                  className={`divide-y divide-solid ${card.dividerColor} flex-1 ${card.textColor} text-xs sm:text-[13px] leading-relaxed font-light`}
+                >
+                  {card.points.map((point, pIdx) => (
+                    <div
+                      key={pIdx}
+                      className={`flex items-start gap-2.5 ${
+                        pIdx === 0
+                          ? "pb-3.5"
+                          : pIdx === card.points.length - 1
+                            ? "pt-3.5"
+                            : "py-3.5"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${card.dotColor} flex-shrink-0 mt-1.5`}
+                      />
+                      <p className="flex-1">{point}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
