@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Custom Brand Fonts ────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Louvette Display';
+  src: url('/fonts/Louvette-Display-.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Louvette Display';
+  src: url('/fonts/Louvette-Display-Semi-Bold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Louvette Display';
+  src: url('/fonts/Louvette-Display-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Louvette Display';
+  src: url('/fonts/Louvette-Display-Ultra-.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham Thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham Extra Light.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham Book.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Active';
+  src: url('/fonts/Active.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+@import 'swiper/css/effect-fade';
+
+:root {
+  --color-primary: #2C4295;
+  --color-primary-dark: #1C2E6C;
+  --color-secondary: #D4EDFC;
+  --color-secondary-light: #EBF6FE;
+  --color-accent: #F28C48;
+  --color-accent-hover: #E0772F;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: #1E293B;
+  background-color: #FFFFFF;
+  overflow-x: hidden;
+}
+
+/* Fluid Typography Classes based on clamp() */
+.fluid-hero-title {
+  font-size: clamp(2.25rem, 5vw + 1rem, 4.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.fluid-section-title {
+  font-size: clamp(1.85rem, 3.5vw + 0.5rem, 3rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.fluid-subtitle {
+  font-size: clamp(1.05rem, 1.5vw + 0.5rem, 1.35rem);
+  line-height: 1.6;
+}
+
+.fluid-card-title {
+  font-size: clamp(1.2rem, 2vw + 0.2rem, 1.6rem);
+  line-height: 1.3;
+}
+
+/* Wave SVG Masks and Section Dividers */
+.wave-divider-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: translateY(99%);
+  z-index: 10;
+}
+
+.wave-divider-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg) translateY(99%);
+  z-index: 10;
+}
+
+/* Custom range slider styling for Accent color */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 9999px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #F28C48;
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(242, 140, 72, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 6px rgba(242, 140, 72, 0.35);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #F28C48;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 4px rgba(242, 140, 72, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 6px rgba(242, 140, 72, 0.35);
+}
+
+/* Swiper custom pagination active styling */
+.swiper-pagination-bullet-active {
+  background: #2C4295 !important;
+  width: 24px !important;
+  border-radius: 9999px !important;
+}
+
+/* ─── Wave animation keyframes ──────────────────────────────────────── */
+
+/* Wave A (blue, back): slides left continuously — fast */
+@keyframes wave-scroll-1 {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-20%); }
+}
+/* Wave B (white, front): slides right continuously — slightly faster, offset */
+@keyframes wave-scroll-2 {
+  0%   { transform: translateX(-20%); }
+  100% { transform: translateX(0); }
+}
+
+.wave-fast-1 {
+  animation: wave-scroll-1 3.5s linear infinite;
+}
+.wave-fast-2 {
+  animation: wave-scroll-2 4.2s linear infinite;
+}
