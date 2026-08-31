@@ -1,5 +1,6 @@
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import ZipperLoader from '@/components/ZipperLoader';
+import CookieConsent from '@/components/CookieConsent';
 import './globals.css';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
       <body className="font-sans antialiased bg-white text-slate-800 selection:bg-accent selection:text-white">
         <ZipperLoader />
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

@@ -113,8 +113,17 @@ export default function ZipperLoader() {
       window.addEventListener('load', handleLoad, { once: true });
     }
 
+    // Absolute failsafe fallback: ensure loader never blocks screen if anything delays or fails
+    const failsafeTimer = setTimeout(() => {
+      setPhase('completed');
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    }, 3200);
+
     return () => {
       clearTimeout(timer);
+      clearTimeout(failsafeTimer);
       window.removeEventListener('load', handleLoad);
     };
   }, []);

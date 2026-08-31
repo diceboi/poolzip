@@ -17,12 +17,12 @@ export default function Header() {
   }, []);
 
   const navLinks = [
-    { name: "Előnyök", href: "#elonyok" },
-    { name: "Összehasonlítás", href: "#osszehasonlitas" },
-    { name: "Videó", href: "#videobemutato" },
-    { name: "Referenciák", href: "#referenciak" },
-    { name: "Vélemények", href: "#velemenyek" },
-    { name: "GYIK", href: "#gyik" },
+    { name: "Előnyök", href: "/#elonyok" },
+    { name: "Összehasonlítás", href: "/#osszehasonlitas" },
+    { name: "Videó", href: "/#videobemutato" },
+    { name: "Referenciák", href: "/#referenciak" },
+    { name: "Vélemények", href: "/#velemenyek" },
+    { name: "GYIK", href: "/#gyik" },
   ];
 
   return (
@@ -35,7 +35,7 @@ export default function Header() {
     >
       <div className="w-full h-full flex items-center justify-between px-4">
         {/* Brand Logo */}
-        <a href="#" className="flex items-center flex-shrink-0">
+        <a href="/" className="flex items-center flex-shrink-0">
           {/* White logo on top of hero, blue logo when scrolled or menu open */}
           <Image
             src="/logos/poolzip-logo.svg"
@@ -86,7 +86,7 @@ export default function Header() {
           </a>
 
           <a
-            href="#kalkulator"
+            href="/#kalkulator"
             style={{ fontFamily: "Gotham, sans-serif" }}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-[#F28C48] hover:bg-[#E0772F] rounded-full shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
           >
@@ -137,7 +137,7 @@ export default function Header() {
                 <span>+36 (30) 123 4567</span>
               </a>
               <a
-                href="#kalkulator"
+                href="/#kalkulator"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 py-3.5 text-sm font-bold text-white bg-[#F28C48] hover:bg-[#E0772F] active:scale-[0.99] rounded-xl text-center shadow-lg shadow-orange-500/25 transition-all"
                 style={{ fontFamily: "Gotham, sans-serif" }}

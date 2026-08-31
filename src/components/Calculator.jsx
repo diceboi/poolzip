@@ -541,6 +541,31 @@ export default function Calculator() {
                 </div>
               )}
 
+              {/* GDPR Consent Checkbox */}
+              <div className="flex items-start gap-2.5 pt-1 text-left">
+                <input
+                  type="checkbox"
+                  id="gdpr-consent"
+                  required
+                  className="mt-0.5 w-4 h-4 rounded text-[#F28C48] focus:ring-[#F28C48] bg-white/10 border-white/30 cursor-pointer flex-shrink-0"
+                />
+                <label
+                  htmlFor="gdpr-consent"
+                  className="text-[11px] text-white/70 leading-relaxed cursor-pointer select-none"
+                >
+                  Elolvastam és elfogadom az{" "}
+                  <a
+                    href="/adatkezeles"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#D4EDFC] underline hover:text-white transition-colors"
+                  >
+                    Adatkezelési Tájékoztatóban
+                  </a>{" "}
+                  foglaltakat, és hozzájárulok a megadott adataim ajánlatadás / visszahívás céljából történő kezeléséhez.
+                </label>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"

@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { FiPhone, FiMail, FiMapPin, FiShield, FiArrowUp } from 'react-icons/fi';
 
 export default function Footer() {
@@ -18,7 +19,7 @@ export default function Footer() {
           {/* Brand & Mission */}
           <div className="lg:col-span-5 flex flex-col items-start">
             <div className="flex flex-col items-start mb-6">
-              <a href="#" className="inline-block mb-3">
+              <Link href="/" className="inline-block mb-3">
                 <Image
                   src="/logos/poolzip-logo.svg"
                   alt="Poolzip logó"
@@ -26,7 +27,7 @@ export default function Footer() {
                   height={39}
                   className="h-9 w-auto"
                 />
-              </a>
+              </Link>
               <span
                 style={{ fontFamily: 'Gotham, sans-serif' }}
                 className="text-[11px] font-semibold tracking-widest text-[#D4EDFC] uppercase"
@@ -56,37 +57,37 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3 text-sm text-secondary/80">
               <li>
-                <a href="#elonyok" className="hover:text-white transition-colors">
+                <a href="/#elonyok" className="hover:text-white transition-colors">
                   Fő Előnyök & Technológia
                 </a>
               </li>
               <li>
-                <a href="#osszehasonlitas" className="hover:text-white transition-colors">
+                <a href="/#osszehasonlitas" className="hover:text-white transition-colors">
                   Összehasonlítás
                 </a>
               </li>
               <li>
-                <a href="#videobemutato" className="hover:text-white transition-colors">
+                <a href="/#videobemutato" className="hover:text-white transition-colors">
                   Videós Bemutató
                 </a>
               </li>
               <li>
-                <a href="#referenciak" className="hover:text-white transition-colors">
+                <a href="/#referenciak" className="hover:text-white transition-colors">
                   Referenciák
                 </a>
               </li>
               <li>
-                <a href="#velemenyek" className="hover:text-white transition-colors">
+                <a href="/#velemenyek" className="hover:text-white transition-colors">
                   Vélemények
                 </a>
               </li>
               <li>
-                <a href="#kalkulator" className="hover:text-white transition-colors font-bold text-[#F28C48]">
+                <a href="/#kalkulator" className="hover:text-white transition-colors font-bold text-[#F28C48]">
                   3D Árkalkuláció
                 </a>
               </li>
               <li>
-                <a href="#gyik" className="hover:text-white transition-colors">
+                <a href="/#gyik" className="hover:text-white transition-colors">
                   Gyakori Kérdések
                 </a>
               </li>
@@ -134,17 +135,17 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-white transition-colors">
+            <Link href="/adatkezeles" className="hover:text-white transition-colors">
               Adatkezelési Tájékoztató
-            </a>
+            </Link>
             <span>•</span>
-            <a href="#" className="hover:text-white transition-colors">
+            <Link href="/aszf" className="hover:text-white transition-colors">
               Általános Szerződési Feltételek
-            </a>
+            </Link>
             <span>•</span>
-            <a href="#" className="hover:text-white transition-colors">
+            <Link href="/impresszum" className="hover:text-white transition-colors">
               Impresszum
-            </a>
+            </Link>
           </div>
 
           <button
