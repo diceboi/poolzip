@@ -82,7 +82,7 @@ export default function ZipperLoader() {
     };
   }, [phase]);
 
-  // Page readiness and minimum display time (smooth deterministic transition)
+  // Page readiness and transition into unzipping
   useEffect(() => {
     let hasStarted = false;
 
@@ -94,36 +94,34 @@ export default function ZipperLoader() {
       setWaveFading(true);
       // 2. Zipper line and slider smoothly fade in
       setZipperFadingIn(true);
-      // 3. After the cross-fade finishes, start unzipping
+      // 3. After cross-fade, start unzipping
       setTimeout(() => {
         setPhase('unzipping');
-      }, 380);
+      }, 300);
     };
 
-    // Wave displays for 1.6s, then seamless transition into zipper opening
-    const timer = setTimeout(startUnzipSequence, 1600);
+    // Ensure the wave displays for at least 1.1s for brand recognition, then unzip
+    const minDisplayTimer = setTimeout(startUnzipSequence, 1200);
 
-    // Also trigger if window finishes loading early, with minimum 1.2s
+    // If window finishes loading, start sequence after short aesthetic delay
     const handleLoad = () => {
-      setTimeout(startUnzipSequence, 1200);
+      setTimeout(startUnzipSequence, 900);
     };
+
     if (document.readyState === 'complete') {
       handleLoad();
     } else {
       window.addEventListener('load', handleLoad, { once: true });
     }
 
-    // Absolute failsafe fallback: ensure loader never blocks screen if anything delays or fails
-    const failsafeTimer = setTimeout(() => {
-      setPhase('completed');
-      if (typeof document !== 'undefined') {
-        document.body.style.overflow = '';
-      }
-    }, 3200);
+    // Safety fallback: if for any reason loading is delayed, force start unzipping (never cut it off!)
+    const safetyStartTimer = setTimeout(() => {
+      startUnzipSequence();
+    }, 3500);
 
     return () => {
-      clearTimeout(timer);
-      clearTimeout(failsafeTimer);
+      clearTimeout(minDisplayTimer);
+      clearTimeout(safetyStartTimer);
       window.removeEventListener('load', handleLoad);
     };
   }, []);
