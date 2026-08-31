@@ -300,7 +300,7 @@ export default function ZipperLoader() {
   }
 
   // Open zipper teeth along the top and bottom wedge curves
-  // STRICTLY PERPENDICULAR to the slanting edge and colored Brand Blue (#244491)
+  // STRICTLY PERPENDICULAR to the slanting edge and colored Brand Blue (#2C4295)
   const openTeethTop = [];
   const openTeethBot = [];
 
@@ -358,7 +358,7 @@ export default function ZipperLoader() {
     >
       {/* 
         UNIFIED CONTINUOUS BLUE CURTAIN:
-        This SVG is ALWAYS rendered with 100% opacity #244491.
+        This SVG is ALWAYS rendered with 100% opacity #2C4295.
         It covers the screen during loading, and then parts seamlessly when unzipping.
         There is NEVER an opacity dip or page flash!
       */}
@@ -376,17 +376,17 @@ export default function ZipperLoader() {
           </filter>
         </defs>
 
-        {/* Top Blue Curtain (Brand Blue #244491) */}
+        {/* Top Blue Curtain (Brand Blue #2C4295) */}
         <path
           d={topCurtainPath}
-          fill="#244491"
+          fill="#2C4295"
           filter="url(#zipper-shadow)"
         />
 
-        {/* Bottom Blue Curtain (Brand Blue #244491) */}
+        {/* Bottom Blue Curtain (Brand Blue #2C4295) */}
         <path
           d={botCurtainPath}
-          fill="#244491"
+          fill="#2C4295"
           filter="url(#zipper-shadow)"
         />
 
@@ -407,26 +407,26 @@ export default function ZipperLoader() {
           ))}
         </g>
 
-        {/* Open Zipper Teeth on Top Curve (Brand Blue #244491, strictly perpendicular) */}
+        {/* Open Zipper Teeth on Top Curve (Brand Blue #2C4295, strictly perpendicular) */}
         <g>
           {openTeethTop.map((tooth) => (
             <g
               key={tooth.key}
               transform={`translate(${tooth.x}, ${tooth.y}) rotate(${tooth.angle}) translate(${-11.06 * toothScale}, ${-26.5 * toothScale}) scale(${toothScale})`}
             >
-              <path d={PATH_TOOTH} fill="#244491" />
+              <path d={PATH_TOOTH} fill="#2C4295" />
             </g>
           ))}
         </g>
 
-        {/* Open Zipper Teeth on Bottom Curve (Brand Blue #244491, strictly perpendicular) */}
+        {/* Open Zipper Teeth on Bottom Curve (Brand Blue #2C4295, strictly perpendicular) */}
         <g>
           {openTeethBot.map((tooth) => (
             <g
               key={tooth.key}
               transform={`translate(${tooth.x}, ${tooth.y}) rotate(${tooth.angle}) translate(${-11.06 * toothScale}, ${-26.5 * toothScale}) scale(${toothScale})`}
             >
-              <path d={PATH_TOOTH} fill="#244491" />
+              <path d={PATH_TOOTH} fill="#2C4295" />
             </g>
           ))}
         </g>

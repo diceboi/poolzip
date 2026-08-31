@@ -11,14 +11,16 @@ import { useEffect, useRef, useState } from "react";
  * unique, organic, and natural.
  *
  * Two solid layers:
- *   Layer A (back)  — brand blue  #244491
+ *   Layer A (back)  — brand blue  #2C4295
  *   Layer B (front) — light-blue-to-white gradient, sits slightly higher
  */
 function AnimatedWaves({ visible }) {
   const rafRef = useRef(null);
   const pathBlueRef = useRef(null);
   const pathWhiteRef = useRef(null);
-  const widthRef = useRef(typeof window !== 'undefined' ? window.innerWidth : 1000);
+  const widthRef = useRef(
+    typeof window !== "undefined" ? window.innerWidth : 1000,
+  );
 
   // Fixed logical coordinate space — SVG stretches to fill container via preserveAspectRatio=none
   const LOGICAL_W = 1000;
@@ -54,8 +56,10 @@ function AnimatedWaves({ visible }) {
   useEffect(() => {
     if (!visible) return;
 
-    const onResize = () => { widthRef.current = window.innerWidth; };
-    window.addEventListener('resize', onResize, { passive: true });
+    const onResize = () => {
+      widthRef.current = window.innerWidth;
+    };
+    window.addEventListener("resize", onResize, { passive: true });
 
     const animate = (ts) => {
       const t = ts / 1000; // seconds
@@ -71,15 +75,15 @@ function AnimatedWaves({ visible }) {
       const blueParams = [
         { amp: 26 * ampScale, freq: 1.2, speed: 1.2, phase: 0 },
         { amp: 10 * ampScale, freq: 2.6, speed: -1, phase: 1.2 },
-        { amp: 5  * ampScale, freq: 4.2, speed: 0.8, phase: 2.8 },
+        { amp: 5 * ampScale, freq: 4.2, speed: 0.8, phase: 2.8 },
       ];
 
       // White wave: sits LOWER than blue
       const whiteBaseY = H * 0.34;
       const whiteParams = [
         { amp: 22 * ampScale, freq: 1.5, speed: 1.3, phase: 0.9 },
-        { amp: 9  * ampScale, freq: 3.0, speed: -1,   phase: 2.1 },
-        { amp: 4  * ampScale, freq: 5.0, speed: 0.6,  phase: 0.4 },
+        { amp: 9 * ampScale, freq: 3.0, speed: -1, phase: 2.1 },
+        { amp: 4 * ampScale, freq: 5.0, speed: 0.6, phase: 0.4 },
       ];
 
       if (pathBlueRef.current) {
@@ -102,7 +106,7 @@ function AnimatedWaves({ visible }) {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener("resize", onResize);
     };
   }, [visible]);
 
@@ -120,13 +124,13 @@ function AnimatedWaves({ visible }) {
       >
         <defs>
           <linearGradient id="whiteWaveGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#B8DFF5" />
+            <stop offset="0%" stopColor="#D4EDFC" />
             <stop offset="45%" stopColor="#ffffff" />
           </linearGradient>
         </defs>
 
         {/* Layer A — Blue solid block (back) */}
-        <path ref={pathBlueRef} fill="#244491" />
+        <path ref={pathBlueRef} fill="#2C4295" />
 
         {/* Layer B — White gradient block (front) */}
         <path ref={pathWhiteRef} fill="url(#whiteWaveGrad)" />
@@ -188,7 +192,7 @@ export default function Hero() {
             3D Árkalkuláció
           </a>
           <a
-            href="#videobemutato"
+            href="#about"
             style={{ fontFamily: "Gotham, sans-serif" }}
             className="text-sm font-medium text-white/90 hover:text-white underline underline-offset-4 transition-colors duration-200"
           >

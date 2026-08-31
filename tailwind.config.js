@@ -26,6 +26,11 @@ module.exports = {
           light: '#FDEEE4',
           dark: '#C8621E',
         },
+        brand: {
+          blue: '#2C4295',
+          lightblue: '#D4EDFC',
+          orange: '#F28C48',
+        },
         sand: {
           DEFAULT: '#D7C4B7',
           light: '#EDE5DF',

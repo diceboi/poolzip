@@ -96,13 +96,40 @@
 @import 'swiper/css/effect-fade';
 
 :root {
-  --color-primary: #2C4295;
+  /* ── Official Brand Identity Colors ── */
+  --color-primary: #2C4295;          /* Sötétkék / Brand Blue - RGB 44 66 149 */
+  --color-primary-rgb: 44, 66, 149;
+
+  --color-secondary: #D4EDFC;        /* Világoskék / Soft Light Blue - RGB 212 237 252 */
+  --color-secondary-rgb: 212, 237, 252;
+
+  --color-accent: #F28C48;           /* Narancssárga / Accent Orange - RGB 242 140 72 */
+  --color-accent-rgb: 242, 140, 72;
+
+  /* UI Variants */
   --color-primary-dark: #1C2E6C;
-  --color-secondary: #D4EDFC;
+  --color-primary-light: #3D57B8;
+  --color-primary-hover: #24377D;
+
   --color-secondary-light: #EBF6FE;
-  --color-accent: #F28C48;
+  --color-secondary-dark: #A8D9F9;
+
   --color-accent-hover: #E0772F;
+  --color-accent-light: #FDEEE4;
 }
+
+/* ── Brand Reusable Utility Classes ── */
+.bg-brand-blue { background-color: var(--color-primary); }
+.text-brand-blue { color: var(--color-primary); }
+.border-brand-blue { border-color: var(--color-primary); }
+
+.bg-brand-lightblue { background-color: var(--color-secondary); }
+.text-brand-lightblue { color: var(--color-secondary); }
+.border-brand-lightblue { border-color: var(--color-secondary); }
+
+.bg-brand-orange { background-color: var(--color-accent); }
+.text-brand-orange { color: var(--color-accent); }
+.border-brand-orange { border-color: var(--color-accent); }
 
 html {
   scroll-behavior: smooth;
@@ -230,3 +257,20 @@ input[type="range"]::-moz-range-thumb:hover {
 .wave-fast-2 {
   animation: wave-scroll-2 4.2s linear infinite;
 }
+
+/* ─── Mobile Menu Slide Down Animation ──────────────────────────────── */
+@keyframes slideDownMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-menu-slide-down {
+  animation: slideDownMenu 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

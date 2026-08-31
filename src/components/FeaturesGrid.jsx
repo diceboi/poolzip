@@ -127,20 +127,20 @@ export default function FeaturesGrid() {
         >
           <div
             style={{ fontFamily: "Gotham, sans-serif" }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF6FE] text-[#244491] font-semibold text-xs uppercase tracking-widest mb-3"
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF6FE] text-[#2C4295] font-semibold text-xs uppercase tracking-widest mb-3.5 border-none"
           >
             Mérnöki precizitás & csúcstechnológia
           </div>
           <h2
             style={{ fontFamily: "'Louvette Display', serif" }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#244491] font-semibold leading-[1.15] mb-3"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#2C4295] font-semibold leading-[1.15] mb-4"
           >
             Innovatív részletek, <br className="hidden sm:inline" />
             <span className="text-slate-800">amelyek egyedülállóvá teszik</span>
           </h2>
           <p
             style={{ fontFamily: "Gotham, sans-serif" }}
-            className="text-slate-600 text-xs sm:text-sm font-light leading-relaxed max-w-2xl mx-auto"
+            className="text-slate-600 text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
           >
             A Poolzip minden eleme a maximális biztonságot, a letisztult kerti
             esztétikát és a gondtalan használatot szolgálja.
@@ -193,7 +193,7 @@ export default function FeaturesGrid() {
                       className={`relative inline-flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full shadow-lg transition-all duration-200 ${
                         isHighlighted
                           ? "bg-[#F28C48] text-white scale-115 shadow-orange-500/50"
-                          : "bg-[#244491] text-white hover:bg-[#F28C48]"
+                          : "bg-[#2C4295] text-white hover:bg-[#F28C48]"
                       }`}
                     >
                       <span className="text-[10px] md:text-xs font-bold leading-none">
@@ -260,7 +260,7 @@ export default function FeaturesGrid() {
                         className={`absolute top-2.5 left-2.5 w-7 h-7 md:w-8 md:h-8 aspect-square rounded-full flex items-center justify-center font-bold text-xs md:text-sm shadow-sm border-none transition-colors duration-200 flex-shrink-0 ${
                           isHighlight
                             ? "bg-[#F28C48] text-white"
-                            : "bg-[#D4EDFC] text-[#244491]"
+                            : "bg-[#D4EDFC] text-[#2C4295]"
                         }`}
                         style={{ minWidth: "28px", minHeight: "28px" }}
                       >
@@ -280,7 +280,7 @@ export default function FeaturesGrid() {
                           className={`text-[9px] sm:text-[9.5px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full w-fit mb-1 border-none transition-colors duration-200 ${
                             isHighlight
                               ? "bg-white text-[#F28C48]"
-                              : "bg-white text-[#244491] shadow-xs"
+                              : "bg-white text-[#2C4295] shadow-xs"
                           }`}
                         >
                           {feat.tag}
@@ -291,7 +291,7 @@ export default function FeaturesGrid() {
                             fontFamily: "'Active', cursive, sans-serif",
                           }}
                           className={`text-lg sm:text-xl md:text-[24px] font-normal leading-tight mb-1 transition-colors duration-200 ${
-                            isHighlight ? "text-white" : "text-[#244491]"
+                            isHighlight ? "text-white" : "text-[#2C4295]"
                           }`}
                         >
                           {feat.title}
@@ -318,7 +318,7 @@ export default function FeaturesGrid() {
             {/* Prev Arrow */}
             <button
               onClick={() => swiperRef.current?.slidePrev()}
-              className="w-9 h-9 rounded-full bg-[#EBF6FE] hover:bg-[#244491] text-[#244491] hover:text-white flex items-center justify-center transition-colors shadow-sm focus:outline-none"
+              className="w-9 h-9 rounded-full bg-[#EBF6FE] hover:bg-[#2C4295] text-[#2C4295] hover:text-white flex items-center justify-center transition-colors shadow-sm focus:outline-none"
               aria-label="Előző funkció"
             >
               <FiChevronLeft className="w-4 h-4" />
@@ -333,7 +333,7 @@ export default function FeaturesGrid() {
                   className={`rounded-full transition-all duration-300 ${
                     activeIdx === i
                       ? "w-7 h-2 bg-[#F28C48]"
-                      : "w-2 h-2 bg-[#244491]/30 hover:bg-[#244491]/60"
+                      : "w-2 h-2 bg-[#2C4295]/30 hover:bg-[#2C4295]/60"
                   }`}
                   aria-label={`${i + 1}. funkció`}
                 />
@@ -343,7 +343,7 @@ export default function FeaturesGrid() {
             {/* Next Arrow */}
             <button
               onClick={() => swiperRef.current?.slideNext()}
-              className="w-9 h-9 rounded-full bg-[#EBF6FE] hover:bg-[#244491] text-[#244491] hover:text-white flex items-center justify-center transition-colors shadow-sm focus:outline-none"
+              className="w-9 h-9 rounded-full bg-[#EBF6FE] hover:bg-[#2C4295] text-[#2C4295] hover:text-white flex items-center justify-center transition-colors shadow-sm focus:outline-none"
               aria-label="Következő funkció"
             >
               <FiChevronRight className="w-4 h-4" />

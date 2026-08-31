@@ -3,37 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FiPlay, FiCheckCircle } from "react-icons/fi";
 
-const VIDEO_PILLARS = [
-  {
-    number: "01",
-    tag: "TELEPÍTÉS",
-    title: "Gyors & Tiszta Beépítés",
-    description:
-      "Új vagy meglévő medencékhez is könnyen illeszthető. Minimális parti átalakítással, felesleges kerti rombolás nélkül telepíthető.",
-  },
-  {
-    number: "02",
-    tag: "SÍNRENDSZER",
-    title: "Síkba Süllyesztett Profil",
-    description:
-      "A diszkrét alumínium sín a burkolat síkjába simul: mezítláb is teljesen járható, nincsenek botlásveszélyes kiálló elemek.",
-  },
-  {
-    number: "03",
-    tag: "NYITÁS & ZÁRÁS",
-    title: "Egygombos Motoros Vezérlés",
-    description:
-      "Távirányítóval vagy fali kapcsolóval mindössze 30-40 másodperc alatt teljesen kitárja vagy feszesen zárja a medencét.",
-  },
-  {
-    number: "04",
-    tag: "BIZTONSÁG",
-    title: "Hermetikus Zip Zárás",
-    description:
-      "A zip résmentesen zárja a víztükröt: a por és falevél a felületen reked, a zárt membrán pedig 150 kg/m²-ig lépésálló.",
-  },
-];
-
 export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -76,22 +45,26 @@ export default function VideoSection() {
         >
           <div
             style={{ fontFamily: "Gotham, sans-serif" }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF6FE] text-[#244491] font-semibold text-xs uppercase tracking-widest mb-3.5"
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF6FE] text-[#2C4295] font-semibold text-xs uppercase tracking-widest mb-3.5"
           >
             Telepítés & működés élesben
           </div>
           <h2
             style={{ fontFamily: "'Louvette Display', serif" }}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#244491] font-semibold leading-[1.15] mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#2C4295] font-semibold leading-[1.15] mb-4"
           >
             Gondtalan telepítés, <br className="hidden sm:inline" />
-            <span className="text-slate-800">másodpercek alatti nyitás és zárás</span>
+            <span className="text-slate-800">
+              másodpercek alatti nyitás és zárás
+            </span>
           </h2>
           <p
             style={{ fontFamily: "Gotham, sans-serif" }}
             className="text-slate-600 text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
           >
-            Nézze meg videónkon, hogyan épül be a Poolzip rendszer precízen a medence partjába, és milyen könnyed a mindennapi használata egyetlen gombnyomással.
+            Nézze meg videónkon, hogyan épül be a Poolzip rendszer precízen a
+            medence partjába, és milyen könnyed a mindennapi használata egyetlen
+            gombnyomással.
           </p>
         </div>
 
@@ -126,7 +99,7 @@ export default function VideoSection() {
               <div className="flex items-center justify-between">
                 <div
                   style={{ fontFamily: "Gotham, sans-serif" }}
-                  className="bg-white/90 backdrop-blur-md text-[#244491] text-[11px] sm:text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-2"
+                  className="bg-white/90 backdrop-blur-md text-[#2C4295] text-[11px] sm:text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-2"
                 >
                   <span className="w-2 h-2 rounded-full bg-[#F28C48] animate-pulse" />
                   <span>BEÉPÍTÉSI & MŰKÖDÉSI BEMUTATÓ</span>
@@ -151,12 +124,6 @@ export default function VideoSection() {
                   <span className="absolute -inset-3 rounded-full bg-[#F28C48]/35 animate-ping pointer-events-none" />
                   <FiPlay className="w-8 h-8 sm:w-10 sm:h-10 ml-1 fill-white" />
                 </button>
-                <span
-                  style={{ fontFamily: "Gotham, sans-serif" }}
-                  className="text-white text-xs sm:text-sm font-semibold tracking-wide drop-shadow-md bg-black/40 backdrop-blur-md px-4 py-1 rounded-full mt-2"
-                >
-                  Kattintson a videó indításához
-                </span>
               </div>
 
               {/* Bottom Bar: Title details */}
@@ -178,56 +145,6 @@ export default function VideoSection() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* ══ 4 KEY HIGHLIGHT CARDS (Telepítés és Nyitás-Zárás témára kihegyezve) ════ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mt-8 md:mt-10">
-          {VIDEO_PILLARS.map((pillar, idx) => (
-            <div
-              key={pillar.number}
-              className="bg-[#CFE8FC] rounded-[24px] p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#F28C48] group cursor-pointer border-none shadow-sm hover:shadow-xl"
-              style={{
-                transition: "opacity 0.6s ease, transform 0.3s ease, background-color 0.25s ease, box-shadow 0.3s ease",
-                opacity: visible ? 1 : 0,
-                transform: visible ? undefined : "translateY(24px)",
-                transitionDelay: `${idx * 0.1}s`,
-              }}
-            >
-              <div>
-                {/* Number & Tag Badge */}
-                <div className="flex items-center justify-between mb-3">
-                  <span
-                    style={{ fontFamily: "Gotham, sans-serif" }}
-                    className="w-7 h-7 rounded-full bg-white/90 text-[#244491] group-hover:bg-white group-hover:text-[#F28C48] text-xs font-bold flex items-center justify-center shadow-xs transition-colors"
-                  >
-                    {pillar.number}
-                  </span>
-                  <span
-                    style={{ fontFamily: "Gotham, sans-serif" }}
-                    className="text-[9.5px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-white/90 text-[#244491] group-hover:bg-white group-hover:text-[#F28C48] transition-colors"
-                  >
-                    {pillar.tag}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h3
-                  style={{ fontFamily: "'Active', cursive, sans-serif" }}
-                  className="text-lg sm:text-xl text-[#244491] group-hover:text-white font-normal leading-tight mb-2 transition-colors"
-                >
-                  {pillar.title}
-                </h3>
-              </div>
-
-              {/* Description */}
-              <p
-                style={{ fontFamily: "Gotham, sans-serif" }}
-                className="text-xs text-[#1E2E5C]/85 group-hover:text-white/95 font-light leading-relaxed transition-colors mt-2"
-              >
-                {pillar.description}
-              </p>
-            </div>
-          ))}
         </div>
       </div>
     </section>

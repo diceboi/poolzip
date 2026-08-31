@@ -30,8 +30,8 @@ function WaveRow({ invertPhase = false, offsetX = 0 }) {
         }}
         shapeRendering="geometricPrecision"
       >
-        <path d={WAVE_PATH} fill="#244491" />
-        <path d={WAVE_PATH} transform="translate(119.85, 0)" fill="#244491" />
+        <path d={WAVE_PATH} fill="#2C4295" />
+        <path d={WAVE_PATH} transform="translate(119.85, 0)" fill="#2C4295" />
       </svg>
     </div>
   );
@@ -118,6 +118,7 @@ export default function AboutSection() {
     <section
       ref={sectionRef}
       className="relative bg-white lg:pb-32 pb-20 overflow-hidden"
+      id="about"
     >
       <div className="max-w-6xl mx-auto px-6 flex flex-col items-center gap-14">
         {/* ══ DESKTOP: Fan — uniformly scaled cards spanning full container ══════ */}
@@ -186,26 +187,22 @@ export default function AboutSection() {
                 }}
               >
                 <div
-                  className="rounded-[24px] shadow-2xl"
+                  className="rounded-[20px] overflow-hidden shadow-2xl"
                   style={{
-                    padding: 8,
-                    background: "#244491",
                     width: w,
                     height: h,
                   }}
                 >
-                  <div className="rounded-[18px] overflow-hidden w-full h-full">
-                    <Image
-                      src={photo.src}
-                      alt={photo.label}
-                      width={w}
-                      height={h}
-                      quality={100}
-                      unoptimized
-                      className="w-full h-full object-cover"
-                      draggable={false}
-                    />
-                  </div>
+                  <Image
+                    src={photo.src}
+                    alt={photo.label}
+                    width={w}
+                    height={h}
+                    quality={100}
+                    unoptimized
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
                 </div>
               </div>
             );
@@ -253,26 +250,22 @@ export default function AboutSection() {
                 }}
               >
                 <div
-                  className="rounded-2xl shadow-xl"
+                  className="rounded-2xl overflow-hidden shadow-xl"
                   style={{
-                    padding: 5,
-                    background: "#244491",
                     width: mobileCardW,
                     height: mobileCardH,
                   }}
                 >
-                  <div className="rounded-xl overflow-hidden w-full h-full">
-                    <Image
-                      src={photo.src}
-                      alt={photo.label}
-                      width={mobileCardW}
-                      height={mobileCardH}
-                      quality={100}
-                      unoptimized
-                      className="w-full h-full object-cover"
-                      draggable={false}
-                    />
-                  </div>
+                  <Image
+                    src={photo.src}
+                    alt={photo.label}
+                    width={mobileCardW}
+                    height={mobileCardH}
+                    quality={100}
+                    unoptimized
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
                 </div>
               </div>
             );
@@ -291,7 +284,7 @@ export default function AboutSection() {
                 style={{
                   width: mobileActive === i ? 20 : 8,
                   height: 8,
-                  background: mobileActive === i ? "#244491" : "#244491",
+                  background: mobileActive === i ? "#2C4295" : "#2C4295",
                   opacity: mobileActive === i ? 1 : 0.3,
                 }}
                 aria-label={`${i + 1}. kép`}
@@ -309,9 +302,15 @@ export default function AboutSection() {
             transform: visible ? "translateY(0)" : "translateY(24px)",
           }}
         >
+          <div
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF6FE] text-[#2C4295] font-semibold text-xs uppercase tracking-widest mb-3.5 border-none"
+          >
+            Bemutatkozás • A Poolzip története
+          </div>
           <h2
             style={{ fontFamily: "'Louvette Display', serif" }}
-            className="text-[#244491] text-4xl md:text-5xl font-semibold mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#2C4295] font-semibold leading-[1.15] mb-4"
           >
             A Poolzip-ről
           </h2>

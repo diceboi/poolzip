@@ -10,12 +10,12 @@ const COMPARISON_CARDS = [
     badge: "Hagyományos",
     image: "/policarbonate.jpg",
     alt: "Polikarbonát búra fedés",
-    bgColor: "bg-[#CFE8FC]",
-    titleColor: "text-[#244491]",
+    bgColor: "bg-[#D4EDFC]",
+    titleColor: "text-[#2C4295]",
     textColor: "text-[#1E2E5C]/90",
     badgeBg: "bg-white/90 text-slate-600",
-    dividerColor: "divide-[#244491]/20",
-    dotColor: "bg-[#244491]",
+    dividerColor: "divide-[#2C4295]/20",
+    dotColor: "bg-[#2C4295]",
     zIndex: "z-10",
     desktopScale: "lg:scale-[0.95]",
     points: [
@@ -30,12 +30,12 @@ const COMPARISON_CARDS = [
     badge: "Alternatíva",
     image: "/plastic.jpg",
     alt: "Műanyag rolós medencefedés",
-    bgColor: "bg-[#CFE8FC]",
-    titleColor: "text-[#244491]",
+    bgColor: "bg-[#D4EDFC]",
+    titleColor: "text-[#2C4295]",
     textColor: "text-[#1E2E5C]/90",
     badgeBg: "bg-white/90 text-slate-600",
-    dividerColor: "divide-[#244491]/20",
-    dotColor: "bg-[#244491]",
+    dividerColor: "divide-[#2C4295]/20",
+    dotColor: "bg-[#2C4295]",
     zIndex: "z-20",
     desktopScale: "lg:scale-[1.0]",
     points: [
@@ -50,10 +50,10 @@ const COMPARISON_CARDS = [
     badge: "Innováció",
     image: "/references/LOMBARD-PAVILION-20.webp",
     alt: "Poolzip prémium feszes medencefedés",
-    bgColor: "bg-[#244491]",
+    bgColor: "bg-[#2C4295]",
     titleColor: "text-[#F28C48]",
     textColor: "text-white/95",
-    badgeBg: "bg-[#244491]/90 text-white border border-white/20",
+    badgeBg: "bg-[#2C4295]/90 text-white border border-white/20",
     dividerColor: "divide-white/20",
     dotColor: "bg-[#F28C48]",
     isWinner: true,
@@ -92,19 +92,31 @@ export default function Comparison() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Title */}
         <div
-          className="text-center mb-16 md:mb-24"
+          className="text-center max-w-3xl mx-auto mb-14 md:mb-18"
           style={{
             transition: "opacity 0.7s ease, transform 0.7s ease",
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(24px)",
           }}
         >
+          <div
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF6FE] text-[#2C4295] font-semibold text-xs uppercase tracking-widest mb-3.5 border-none"
+          >
+            Piaci összehasonlítás
+          </div>
           <h2
             style={{ fontFamily: "'Louvette Display', serif" }}
-            className="text-4xl md:text-5xl lg:text-6xl text-[#244491] font-semibold tracking-tight"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#2C4295] font-semibold leading-[1.15] mb-4"
           >
             Összehasonlítás
           </h2>
+          <p
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="text-slate-600 text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
+          >
+            Hogyan teljesít a Poolzip a hagyományos polikarbonát búrákkal és a műanyag rolós fedésekkel szemben?
+          </p>
         </div>
 
         {/* 3 Cards: Clean vertical stack on mobile without overlap, cascading overlap on desktop */}
@@ -157,7 +169,7 @@ export default function Comparison() {
                 {/* Card Title in Active font */}
                 <h3
                   style={{ fontFamily: "'Active', cursive, sans-serif" }}
-                  className={`text-2xl sm:text-[26px] ${card.titleColor} text-center mb-5 font-normal tracking-wide`}
+                  className={`text-3xl sm:text-3xl ${card.titleColor} text-center mb-5 font-normal tracking-wide`}
                 >
                   {card.title}
                 </h3>

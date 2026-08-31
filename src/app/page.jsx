@@ -5,6 +5,7 @@ import FeaturesGrid from '@/components/FeaturesGrid';
 import Comparison from '@/components/Comparison';
 import VideoSection from '@/components/VideoSection';
 import GallerySection from '@/components/GallerySection';
+import ScrollZipper from '@/components/ScrollZipper';
 import Calculator from '@/components/Calculator';
 import Testimonials from '@/components/Testimonials';
 import FAQ from '@/components/FAQ';
@@ -33,6 +34,9 @@ export default function HomePage() {
 
       {/* 6. Gallery / Swiper Slider with Reference Projects */}
       <GallerySection />
+
+      {/* Dynamic Scroll Zipper Transition: Unzips from left to right as you scroll into the 3D Section */}
+      <ScrollZipper />
 
       {/* 7. The Core Feature: Interactive 3D Pool Configurator & Lead Generation Form */}
       <Calculator />

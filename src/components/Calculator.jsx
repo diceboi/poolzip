@@ -1,553 +1,573 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import confetti from 'canvas-confetti';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import confetti from "canvas-confetti";
 import {
-  FiCheckCircle,
-  FiArrowRight,
-  FiSliders,
   FiSend,
-  FiShield,
-  FiPhone,
+  FiPhoneCall,
   FiMail,
   FiUser,
-  FiMapPin,
+  FiPhone,
+  FiCheckCircle,
+  FiRotateCw,
   FiClock,
-  FiCheck,
-  FiEye,
   FiMaximize2,
-} from 'react-icons/fi';
-import { MdOutlinePool, MdColorLens, MdLockOutline, MdLockOpen } from 'react-icons/md';
+} from "react-icons/fi";
+
+
 
 // Dynamic import of 3D Scene with SSR disabled for Next.js
-const Scene3D = dynamic(() => import('./Scene3D'), {
+const Scene3D = dynamic(() => import("./Scene3D"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[500px] rounded-3xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 border border-slate-700">
-      <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mb-4" />
-      <span className="text-sm font-semibold text-slate-300">3D Medencemodell betöltése...</span>
+    <div className="w-full h-full min-h-[460px] flex flex-col items-center justify-center text-white/70">
+      <div className="w-12 h-12 border-4 border-[#F28C48] border-t-transparent rounded-full animate-spin mb-4" />
+      <span
+        style={{ fontFamily: "Gotham, sans-serif" }}
+        className="text-sm font-semibold text-white/80"
+      >
+        3D Medencemodell betöltése...
+      </span>
     </div>
   ),
 });
 
 export default function Calculator() {
-  // Dimension States (1m steps as requested)
-  const [width, setWidth] = useState(4); // 2m - 6m (step 1)
-  const [length, setLength] = useState(8); // 4m - 16m (step 1)
-  const [color, setColor] = useState('grey'); // 'grey' | 'beige'
-  const [coverState, setCoverState] = useState('half'); // 'closed' | 'half' | 'open'
+  // Continuous Sliders
+  const [width, setWidth] = useState(4.0); // 2.5m - 6.0m (step 0.1)
+  const [length, setLength] = useState(8.0); // 4.5m - 14.0m (step 0.1)
+  const [coverProgress, setCoverProgress] = useState(65); // 0% - 100% (step 1)
+  const [color, setColor] = useState("grey"); // 'grey' | 'beige'
 
-  // Lead Form State
+  // Action Form Tab: 'email' | 'callback'
+  const [formMode, setFormMode] = useState("email");
+
+  // Form Fields
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    city: '',
-    note: '',
+    name: "",
+    email: "",
+    phone: "",
+    timeSlot: "Délelőtt (9:00 - 12:00)",
+    note: "",
   });
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Calculations
-  const poolArea = (width * length).toFixed(0);
-  const foilWidth = (width + 1).toFixed(0);
-  const foilLength = (length + 1).toFixed(0);
-  const foilArea = (Number(foilWidth) * Number(foilLength)).toFixed(0);
-
-  // Indicative Price Formula (Baseline: ~3.2M Ft for 8x4m)
-  const baseSystemCost = 1800000;
-  const pricePerM2 = 32000;
-  const rawPrice = baseSystemCost + Math.round(Number(foilArea) * pricePerM2);
-  const indicativePrice = Math.round(rawPrice / 10000) * 10000;
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('hu-HU').format(price) + ' Ft';
-  };
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash === "#visszahivas" || hash === "#visszahivast-kerek") {
+        setFormMode("callback");
+        const el = document.getElementById("urlap");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      } else if (hash === "#urlap" || hash === "#ajanlatkeres") {
+        const el = document.getElementById("urlap");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");
 
-    // Simulate lead submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          formMode,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          timeSlot: formData.timeSlot,
+          note: formData.note,
+          width: Number(width).toFixed(1),
+          length: Number(length).toFixed(1),
+          color: color === "beige" ? "Bézs" : "Antracitszürke",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Hiba történt az üzenet küldésekor.");
+      }
+
       setIsSubmitted(true);
 
-      // Trigger Confetti Effect
       try {
         confetti({
-          particleCount: 100,
+          particleCount: 110,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#2C4295', '#F28C48', '#D4EDFC', '#38BDF8'],
+          colors: ["#F28C48", "#FFFFFF", "#38BDF8", "#D4EDFC"],
         });
       } catch (err) {
-        // Fallback silently if canvas-confetti is not loaded
+        // Fallback if canvas-confetti is not loaded
       }
-    }, 600);
+    } catch (err) {
+      console.error("Form submit error:", err);
+      setErrorMessage(
+        err.message || "Nem sikerült elküldeni a megkeresést. Kérjük próbálja meg később!"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setIsSubmitted(false);
+    setErrorMessage("");
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      timeSlot: "Délelőtt (9:00 - 12:00)",
+      note: "",
+    });
   };
 
   return (
-    <section id="kalkulator" className="py-20 bg-gradient-to-b from-white via-secondary/25 to-white relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      id="kalkulator"
+      className="py-20 md:py-28 bg-[#2C4295] relative overflow-hidden text-white"
+    >
+      {/* Background Ambience / Subtle Brand Glows */}
+      <div className="absolute top-0 right-0 w-[550px] h-[550px] bg-white/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#F28C48]/10 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/15 text-accent-dark font-bold text-xs uppercase tracking-wider mb-4 border border-accent/20">
-            Interaktív 3D Konfigurátor & Árajánlat
+        <div className="text-center max-w-3xl mx-auto mb-4 md:mb-6">
+          <div
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-white font-semibold text-xs uppercase tracking-widest mb-3.5"
+          >
+            Interaktív 3D Tervező
           </div>
-          <h2 className="fluid-section-title font-extrabold text-primary mb-4">
-            Tervezze meg medencefedését <br className="hidden sm:inline" />
-            <span className="text-slate-900">valós idejű 3D élménnyel</span>
+          <h2
+            style={{ fontFamily: "'Louvette Display', serif" }}
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white font-semibold leading-[1.15] mb-4"
+          >
+            Tervezze meg saját medencefedését
           </h2>
-          <p className="fluid-subtitle text-slate-600">
-            Állítsa be a méreteket, tesztelje a nyitási és zárási mechanizmust 360 fokban körbeforgatható nézetben!
+          <p
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="text-white/80 text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
+          >
+            Állítsa be a méreteket, tesztelje a nyitási és zárási folyamatot
+            valós időben, és kérjen közvetlenül ajánlatot vagy visszahívást!
           </p>
         </div>
+      </div>
 
-        {/* 1. Full-Width Immersive 3D Stage */}
-        <div className="relative w-full rounded-3xl overflow-hidden bg-slate-900 border border-slate-700/80 shadow-2xl mb-8">
-          {/* Top Floating Info Bar inside 3D Viewport */}
-          <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-            <div className="bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700 pointer-events-auto flex items-center gap-2.5 shadow-xl">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">
-                Poolzip 3D Modell
-              </span>
-              <span className="text-slate-600">|</span>
-              <span className="text-xs font-extrabold text-accent">
-                {width}m × {length}m
+      {/* ══ 100% FULL-WIDTH 3D VIEWPORT (EDGE-TO-EDGE ON BOTH MOBILE & DESKTOP) ════ */}
+      <div className="relative w-full h-[360px] sm:h-[440px] md:h-[540px] lg:h-[640px] flex items-center justify-center my-1 select-none">
+        {/* 🌟 Luminous circular halo peeking out from behind the pool model into the navy background 🌟 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] sm:w-[540px] sm:h-[540px] md:w-[720px] md:h-[720px] lg:w-[900px] lg:h-[900px] rounded-full bg-sky-300/20 blur-[95px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] sm:w-[380px] sm:h-[380px] md:w-[480px] md:h-[480px] rounded-full bg-white/20 blur-[65px] pointer-events-none" />
+
+        {/* Floating Dimension Pill over 3D model */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-white/15 backdrop-blur-md px-5 py-2 rounded-full text-xs font-semibold text-white shadow-sm border-none pointer-events-none w-[80%] max-w-sm justify-center m-auto">
+          <span className="w-2 h-2 rounded-full bg-[#F28C48] animate-pulse flex-shrink-0" />
+          <span
+            className="min-w-fit"
+            style={{ fontFamily: "Gotham, sans-serif" }}
+          >
+            {Number(width).toFixed(1)} m × {Number(length).toFixed(1)} m
+          </span>
+          <span className="text-white/40">•</span>
+          <span
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="text-[#F28C48] min-w-fit"
+          >
+            {coverProgress}% bezárva
+          </span>
+        </div>
+
+        {/* 3D Canvas directly floating on seamless navy background */}
+        <div className="w-full h-full relative z-10">
+          <Scene3D
+            poolWidth={Number(width)}
+            poolLength={Number(length)}
+            coverState={Number(coverProgress)}
+            color={color}
+          />
+        </div>
+      </div>
+
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* ══ SLIDERS AROUND THE 3D VIEW: COMPACT 2X2 GRID ON MOBILE, AIRY ON DESKTOP ══════════ */}
+        <div className="max-w-5xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6 mt-2 mb-10">
+          {/* 1. Width Slider */}
+          <div className="bg-white/[0.08] backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:p-5 border-none flex flex-col justify-center">
+            <div
+              style={{ fontFamily: "Gotham, sans-serif" }}
+              className="flex justify-between items-center text-[11px] sm:text-xs font-semibold mb-1 sm:mb-2 text-white/90"
+            >
+              <span>Szélesség</span>
+              <span className="text-xs sm:text-sm font-bold text-white bg-white/15 px-1.5 sm:px-2.5 py-0.5 rounded-md">
+                {Number(width).toFixed(1)} m
               </span>
             </div>
-
-            <div className="flex items-center gap-2 pointer-events-auto">
-              <div className="bg-slate-950/80 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-700 text-xs font-semibold text-slate-300 flex items-center gap-2 shadow-xl">
-                <span>Állapot:</span>
-                <span className="text-secondary font-bold">
-                  {coverState === 'closed'
-                    ? 'Teljesen zárt (100%)'
-                    : coverState === 'open'
-                    ? 'Nyitott (0%)'
-                    : 'Félig nyitott (50%)'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 3D Canvas Stage */}
-          <div className="w-full h-[480px] sm:h-[550px] lg:h-[620px]">
-            <Scene3D
-              poolWidth={width}
-              poolLength={length}
-              coverState={coverState}
-              color={color}
+            <input
+              type="range"
+              min="2.5"
+              max="6.0"
+              step="0.1"
+              value={width}
+              onChange={(e) => setWidth(parseFloat(e.target.value))}
+              className="w-full h-1.5 sm:h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#F28C48]"
             />
-          </div>
-
-          {/* Bottom Overlay Hint inside 3D Viewport */}
-          <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between text-[11px] text-slate-400 bg-slate-950/75 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-800 pointer-events-none">
-            <span className="flex items-center gap-1.5">
-              <span>🔄</span> Forgatás: bal egérgomb / érintés
-            </span>
-            <span className="hidden sm:inline">🔍 Zoom: görgetés</span>
-            <span className="text-secondary font-semibold">
-              Fedésméret: {foilWidth}m × {foilLength}m ({foilArea} m²)
-            </span>
-          </div>
-        </div>
-
-        {/* 2. Interactive Control Bar (Directly below 3D Stage) */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card-soft border border-slate-200 mb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Sliders (Left part of Control Bar) */}
-            <div className="lg:col-span-6 space-y-6 pr-0 lg:pr-6 lg:border-r border-slate-100">
-              {/* Width Slider */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <FiSliders className="text-accent" />
-                    <span>Medence Szélesség</span>
-                  </label>
-                  <span className="text-sm font-extrabold text-primary bg-secondary/60 px-3 py-1 rounded-lg">
-                    {width} méter
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="2"
-                  max="6"
-                  step="1"
-                  value={width}
-                  onChange={(e) => setWidth(parseInt(e.target.value, 10))}
-                  className="w-full cursor-pointer accent-accent"
-                />
-                <div className="flex justify-between text-[11px] text-slate-400 mt-1 font-medium">
-                  <span>2 m</span>
-                  <span>3 m</span>
-                  <span>4 m</span>
-                  <span>5 m</span>
-                  <span>6 m</span>
-                </div>
-              </div>
-
-              {/* Length Slider */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <FiSliders className="text-accent" />
-                    <span>Medence Hosszúság</span>
-                  </label>
-                  <span className="text-sm font-extrabold text-primary bg-secondary/60 px-3 py-1 rounded-lg">
-                    {length} méter
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="4"
-                  max="16"
-                  step="1"
-                  value={length}
-                  onChange={(e) => setLength(parseInt(e.target.value, 10))}
-                  className="w-full cursor-pointer accent-accent"
-                />
-                <div className="flex justify-between text-[11px] text-slate-400 mt-1 font-medium">
-                  <span>4 m</span>
-                  <span>7 m</span>
-                  <span>10 m</span>
-                  <span>13 m</span>
-                  <span>16 m</span>
-                </div>
-              </div>
+            <div className="flex justify-between text-[9px] sm:text-[10px] text-white/50 mt-1 font-light">
+              <span>2.5 m</span>
+              <span>6.0 m</span>
             </div>
+          </div>
 
-            {/* Cover State & Color Selector (Right part of Control Bar) */}
-            <div className="lg:col-span-6 space-y-6">
-              {/* Cover State Buttons */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-                  Fedés Állapotának Tesztelése
-                </label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setCoverState('closed')}
-                    className={`py-3 px-3 rounded-2xl border-2 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      coverState === 'closed'
-                        ? 'border-primary bg-secondary/50 text-primary shadow-sm ring-2 ring-primary/20'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300 bg-slate-50/60'
-                    }`}
-                  >
-                    <MdLockOutline className="w-4 h-4 text-primary" />
-                    <span>Zárt (100%)</span>
-                  </button>
+          {/* 2. Length Slider */}
+          <div className="bg-white/[0.08] backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:p-5 border-none flex flex-col justify-center">
+            <div
+              style={{ fontFamily: "Gotham, sans-serif" }}
+              className="flex justify-between items-center text-[11px] sm:text-xs font-semibold mb-1 sm:mb-2 text-white/90"
+            >
+              <span>Hosszúság</span>
+              <span className="text-xs sm:text-sm font-bold text-white bg-white/15 px-1.5 sm:px-2.5 py-0.5 rounded-md">
+                {Number(length).toFixed(1)} m
+              </span>
+            </div>
+            <input
+              type="range"
+              min="4.5"
+              max="14.0"
+              step="0.1"
+              value={length}
+              onChange={(e) => setLength(parseFloat(e.target.value))}
+              className="w-full h-1.5 sm:h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#F28C48]"
+            />
+            <div className="flex justify-between text-[9px] sm:text-[10px] text-white/50 mt-1 font-light">
+              <span>4.5 m</span>
+              <span>14.0 m</span>
+            </div>
+          </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setCoverState('half')}
-                    className={`py-3 px-3 rounded-2xl border-2 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      coverState === 'half'
-                        ? 'border-primary bg-secondary/50 text-primary shadow-sm ring-2 ring-primary/20'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300 bg-slate-50/60'
-                    }`}
-                  >
-                    <MdOutlinePool className="w-4 h-4 text-primary" />
-                    <span>Félig nyitott</span>
-                  </button>
+          {/* 3. Cover Closure Continuous Slider */}
+          <div className="bg-white/[0.08] backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:p-5 border-none flex flex-col justify-center">
+            <div
+              style={{ fontFamily: "Gotham, sans-serif" }}
+              className="flex justify-between items-center text-[11px] sm:text-xs font-semibold mb-1 sm:mb-2 text-white/90"
+            >
+              <span>Bezárás</span>
+              <span className="text-xs sm:text-sm font-bold text-[#F28C48] bg-[#F28C48]/20 px-1.5 sm:px-2.5 py-0.5 rounded-md">
+                {coverProgress}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={coverProgress}
+              onChange={(e) => setCoverProgress(parseInt(e.target.value, 10))}
+              className="w-full h-1.5 sm:h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#F28C48]"
+            />
+            <div className="flex justify-between text-[9px] sm:text-[10px] text-white/50 mt-1 font-light">
+              <span>Nyitott</span>
+              <span>Zárt</span>
+            </div>
+          </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setCoverState('open')}
-                    className={`py-3 px-3 rounded-2xl border-2 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      coverState === 'open'
-                        ? 'border-primary bg-secondary/50 text-primary shadow-sm ring-2 ring-primary/20'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300 bg-slate-50/60'
-                    }`}
-                  >
-                    <MdLockOpen className="w-4 h-4 text-primary" />
-                    <span>Nyitott (0%)</span>
-                  </button>
-                </div>
-              </div>
+          {/* 4. Color Selection */}
+          <div className="bg-white/[0.08] backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:p-5 border-none flex flex-col justify-between">
+            <span
+              style={{ fontFamily: "Gotham, sans-serif" }}
+              className="block text-[11px] sm:text-xs font-semibold text-white/90 mb-1.5 sm:mb-2"
+            >
+              Ponyva színe
+            </span>
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => setColor("grey")}
+                className={`flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg sm:rounded-xl text-[10.5px] sm:text-xs font-semibold transition-all cursor-pointer border-none ${
+                  color === "grey"
+                    ? "bg-white text-[#2C4295] shadow-md"
+                    : "bg-white/10 text-white/70 hover:bg-white/20"
+                }`}
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-[#4B515D] flex-shrink-0" />
+                <span>Antracit</span>
+              </button>
 
-              {/* Color Selector */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-                  Membrán Színmintája
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setColor('grey')}
-                    className={`flex items-center gap-3 p-2.5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
-                      color === 'grey'
-                        ? 'border-primary bg-secondary/40 ring-2 ring-primary/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <span className="w-7 h-7 rounded-lg bg-[#525866] shadow-inner flex items-center justify-center text-white flex-shrink-0">
-                      {color === 'grey' && <FiCheck className="w-3.5 h-3.5" />}
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">Modern Szürke</div>
-                      <div className="text-[10px] text-slate-500">Antracit szín</div>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setColor('beige')}
-                    className={`flex items-center gap-3 p-2.5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
-                      color === 'beige'
-                        ? 'border-primary bg-secondary/40 ring-2 ring-primary/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <span className="w-7 h-7 rounded-lg bg-[#C8B5A3] shadow-inner flex items-center justify-center text-slate-800 flex-shrink-0">
-                      {color === 'beige' && <FiCheck className="w-3.5 h-3.5" />}
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">Elegáns Bézs</div>
-                      <div className="text-[10px] text-slate-500">Homok szín</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setColor("beige")}
+                className={`flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg sm:rounded-xl text-[10.5px] sm:text-xs font-semibold transition-all cursor-pointer border-none ${
+                  color === "beige"
+                    ? "bg-white text-[#2C4295] shadow-md"
+                    : "bg-white/10 text-white/70 hover:bg-white/20"
+                }`}
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-[#E6D7C3] border border-black/10 flex-shrink-0" />
+                <span>Bézs</span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* 3. Calculations Summary & Lead Form */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left Column: Calculated Values & Indicative Price Box */}
-          <div className="lg:col-span-5 flex flex-col justify-between bg-gradient-to-br from-slate-900 via-primary-dark to-primary text-white rounded-3xl p-8 shadow-xl">
-            <div>
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/15">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-secondary">
-                    Kalkulált Méretek
-                  </span>
-                  <h3 className="text-xl font-bold text-white">Részletes Összesítő</h3>
-                </div>
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-accent">
-                  <MdOutlinePool className="w-6 h-6" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
-                <div className="bg-white/10 rounded-2xl p-4">
-                  <span className="text-slate-300 block mb-1">Medence Vízfelület</span>
-                  <strong className="text-xl text-white font-extrabold">{poolArea} m²</strong>
-                  <span className="text-[11px] text-slate-300 block mt-0.5">({width}m × {length}m)</span>
-                </div>
-
-                <div className="bg-white/10 rounded-2xl p-4">
-                  <span className="text-slate-300 block mb-1">Fedés Felülete (+1m)</span>
-                  <strong className="text-xl text-secondary font-extrabold">{foilArea} m²</strong>
-                  <span className="text-[11px] text-slate-300 block mt-0.5">({foilWidth}m × {foilLength}m)</span>
-                </div>
-              </div>
-
-              <ul className="space-y-2.5 text-xs text-secondary/90 mb-6">
-                <li className="flex items-center gap-2">
-                  <FiCheckCircle className="text-accent flex-shrink-0" />
-                  <span>150 kg/m² lépésálló, teherbíró zip membrán</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <FiCheckCircle className="text-accent flex-shrink-0" />
-                  <span>Beépített, csendes motoros csévélő egység</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <FiCheckCircle className="text-accent flex-shrink-0" />
-                  <span>Síkba simuló, mezítláb járható alumínium vezetősínek</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Big Indicative Price Block */}
-            <div className="pt-6 border-t border-white/20">
-              <span className="text-xs font-semibold text-secondary uppercase tracking-wider block mb-1">
-                Becsült Indikatív Ár:
-              </span>
-              <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
-                {formatPrice(indicativePrice)}
-              </div>
-              <span className="text-[11px] text-slate-300">
-                *Tartalmazza a komplett rendszert, motort, síneket és távirányítót.
-              </span>
-            </div>
+        {/* ══ LEAD ACTION FORM SECTION: AIRY & CLEAN ══════════════════════════ */}
+        <div
+          id="urlap"
+          className="max-w-2xl mx-auto bg-white/[0.07] backdrop-blur-md rounded-3xl p-6 sm:p-10 border-none scroll-mt-28"
+        >
+          <div id="visszahivas" className="sr-only" />
+          <div id="ajanlatkeres" className="sr-only" />
+          {/* Tab Selector: Email vs Callback */}
+          <div className="flex flex-col sm:flex-row rounded-2xl sm:rounded-full bg-black/20 p-1.5 sm:p-1 gap-1.5 sm:gap-0 mb-6 sm:mb-8 max-w-md mx-auto border-none">
+            <button
+              type="button"
+              onClick={() => setFormMode("email")}
+              className={`w-full sm:flex-1 py-2.5 rounded-xl sm:rounded-full text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border-none whitespace-nowrap ${
+                formMode === "email"
+                  ? "bg-white text-[#2C4295] shadow-md"
+                  : "text-white/70 hover:text-white"
+              }`}
+            >
+              <FiMail className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>Ajánlatkérés e-mailben</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormMode("callback")}
+              className={`w-full sm:flex-1 py-2.5 rounded-xl sm:rounded-full text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border-none whitespace-nowrap ${
+                formMode === "callback"
+                  ? "bg-white text-[#2C4295] shadow-md"
+                  : "text-white/70 hover:text-white"
+              }`}
+            >
+              <FiPhoneCall className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>Visszahívás kérése</span>
+            </button>
           </div>
 
-          {/* Right Column: Lead Capture Form */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-8 shadow-card-soft border border-slate-200 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
-                <FiMail className="text-accent" />
-                <span>Kérjen Helyszíni Felmérést & Részletes Árajánlatot</span>
-              </h3>
-              <p className="text-xs text-slate-500 mb-6">
-                Töltse ki az alábbi űrlapot, és mérnök-kollégánk 24 órán belül felveszi Önnel a kapcsolatot!
+          {isSubmitted ? (
+            /* Success State */
+            <div className="text-center py-6">
+              <div className="w-16 h-16 rounded-full bg-[#F28C48] text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/30">
+                <FiCheckCircle className="w-8 h-8" />
+              </div>
+              <h4
+                style={{ fontFamily: "'Active', cursive, sans-serif" }}
+                className="text-2xl text-white font-normal mb-2"
+              >
+                Köszönjük megkeresését!
+              </h4>
+              <p
+                style={{ fontFamily: "Gotham, sans-serif" }}
+                className="text-white/80 text-xs sm:text-sm font-light leading-relaxed max-w-sm mx-auto mb-6"
+              >
+                {formMode === "email"
+                  ? `Rögzítettük a méreteket (${Number(width).toFixed(1)}m × ${Number(length).toFixed(1)}m). Szakértőnk hamarosan elküldi az ajánlatot a megadott e-mail címre.`
+                  : `Visszahívási kérését rögzítettük (${formData.timeSlot}). Munkatársunk hamarosan keresni fogja a megadott telefonszámon.`}
               </p>
-
-              <AnimatePresence mode="wait">
-                {isSubmitted ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="p-8 rounded-2xl bg-emerald-50 border border-emerald-200 text-center"
-                  >
-                    <div className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                      <FiCheckCircle className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-xl font-bold text-emerald-900 mb-2">
-                      Köszönjük érdeklődését, {formData.name || 'Kedves Érdeklődő'}!
-                    </h4>
-                    <p className="text-sm text-emerald-700 max-w-md mx-auto mb-4 leading-relaxed">
-                      Sikeresen rögzítettük ajánlatkérését a <strong>{width} × {length} méteres</strong> ({foilArea} m²-es) medencére. 
-                      Hamarosan küldjük a tételes specifikációt és ajánlatot a megadott e-mail címre.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setIsSubmitted(false)}
-                      className="text-xs font-bold text-emerald-800 underline hover:text-emerald-950 cursor-pointer"
-                    >
-                      Új konfiguráció indítása
-                    </button>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Name */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Teljes Név *
-                        </label>
-                        <div className="relative">
-                          <FiUser className="absolute left-3.5 top-3.5 text-slate-400" />
-                          <input
-                            type="text"
-                            required
-                            name="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                            placeholder="pl. Kovács Péter"
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Email */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          E-mail Cím *
-                        </label>
-                        <div className="relative">
-                          <FiMail className="absolute left-3.5 top-3.5 text-slate-400" />
-                          <input
-                            type="email"
-                            required
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            placeholder="pl. kovacs.peter@email.hu"
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Phone */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Telefonszám *
-                        </label>
-                        <div className="relative">
-                          <FiPhone className="absolute left-3.5 top-3.5 text-slate-400" />
-                          <input
-                            type="tel"
-                            required
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                            placeholder="pl. +36 30 123 4567"
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      {/* City */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Település / Helyszín *
-                        </label>
-                        <div className="relative">
-                          <FiMapPin className="absolute left-3.5 top-3.5 text-slate-400" />
-                          <input
-                            type="text"
-                            required
-                            name="city"
-                            value={formData.city}
-                            onChange={handleInputChange}
-                            placeholder="pl. Budapest, II. kerület"
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Note */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Egyedi Megjegyzés / Kérdés (Opcionális)
-                      </label>
-                      <textarea
-                        rows="2"
-                        name="note"
-                        value={formData.note}
-                        onChange={handleInputChange}
-                        placeholder="pl. Épülőfélben lévő medence, rejtett süllyesztéssel..."
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none"
-                      />
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full py-4 bg-accent hover:bg-accent-hover active:bg-accent-dark text-white font-bold rounded-2xl shadow-glow-accent transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Ajánlatkérés küldése...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Ingyenes Ajánlatkérés & Helyszíni Felmérés</span>
-                          <FiSend className="w-5 h-5" />
-                        </>
-                      )}
-                    </button>
-
-                    <div className="flex items-center justify-center gap-6 text-[11px] text-slate-400 pt-1">
-                      <span className="flex items-center gap-1">
-                        <FiShield className="text-emerald-500" /> 100% Adatvédelem
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FiClock className="text-primary" /> Válasz 24 órán belül
-                      </span>
-                    </div>
-                  </form>
-                )}
-              </AnimatePresence>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-colors cursor-pointer border-none"
+              >
+                <FiRotateCw className="w-3.5 h-3.5" />
+                <span>Új konfiguráció küldése</span>
+              </button>
             </div>
-          </div>
+          ) : (
+            /* Form Fields */
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Name */}
+                <div>
+                  <label
+                    htmlFor="calc-name"
+                    style={{ fontFamily: "Gotham, sans-serif" }}
+                    className="block text-xs font-medium text-white/80 mb-1.5"
+                  >
+                    Teljes név *
+                  </label>
+                  <div className="relative">
+                    <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <input
+                      id="calc-name"
+                      type="text"
+                      name="name"
+                      required
+                      placeholder="Kovács János"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#F28C48] transition-all border-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label
+                    htmlFor="calc-phone"
+                    style={{ fontFamily: "Gotham, sans-serif" }}
+                    className="block text-xs font-medium text-white/80 mb-1.5"
+                  >
+                    Telefonszám *
+                  </label>
+                  <div className="relative">
+                    <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <input
+                      id="calc-phone"
+                      type="tel"
+                      name="phone"
+                      required
+                      placeholder="+36 30 123 4567"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#F28C48] transition-all border-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Mode Specific Field */}
+              {formMode === "email" ? (
+                <div>
+                  <label
+                    htmlFor="calc-email"
+                    style={{ fontFamily: "Gotham, sans-serif" }}
+                    className="block text-xs font-medium text-white/80 mb-1.5"
+                  >
+                    E-mail cím *
+                  </label>
+                  <div className="relative">
+                    <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <input
+                      id="calc-email"
+                      type="email"
+                      name="email"
+                      required
+                      placeholder="kovacs.janos@pelda.hu"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#F28C48] transition-all border-none"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label
+                    htmlFor="calc-timeslot"
+                    style={{ fontFamily: "Gotham, sans-serif" }}
+                    className="block text-xs font-medium text-white/80 mb-1.5"
+                  >
+                    Mikor hívhatjuk? (Preferált idősáv)
+                  </label>
+                  <div className="relative">
+                    <FiClock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <select
+                      id="calc-timeslot"
+                      name="timeSlot"
+                      value={formData.timeSlot}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#F28C48] transition-all border-none cursor-pointer"
+                    >
+                      <option
+                        value="Délelőtt (9:00 - 12:00)"
+                        className="text-slate-900"
+                      >
+                        Délelőtt (9:00 - 12:00)
+                      </option>
+                      <option
+                        value="Délután (12:00 - 17:00)"
+                        className="text-slate-900"
+                      >
+                        Délután (12:00 - 17:00)
+                      </option>
+                      <option
+                        value="Bármikor a mai napon"
+                        className="text-slate-900"
+                      >
+                        Bármikor a mai napon
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Note */}
+              <div>
+                <label
+                  htmlFor="calc-note"
+                  style={{ fontFamily: "Gotham, sans-serif" }}
+                  className="block text-xs font-medium text-white/80 mb-1.5"
+                >
+                  Megjegyzés vagy kérdés (opcionális)
+                </label>
+                <textarea
+                  id="calc-note"
+                  name="note"
+                  rows="2"
+                  placeholder="Pl. meglévő medencére szeretném, süllyesztett partkővel..."
+                  value={formData.note}
+                  onChange={handleInputChange}
+                  className="w-full bg-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#F28C48] transition-all border-none resize-none"
+                />
+              </div>
+
+              {/* Error Alert */}
+              {errorMessage && (
+                <div className="p-3.5 rounded-xl bg-red-500/20 border border-red-400/30 text-white text-xs font-medium text-center">
+                  ⚠️ {errorMessage}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full mt-1 py-3.5 px-6 rounded-xl bg-[#F28C48] hover:bg-[#e07936] text-white font-bold text-sm tracking-wide shadow-lg shadow-orange-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border-none disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : formMode === "email" ? (
+                  <>
+                    <FiSend className="w-4 h-4" />
+                    <span>Ajánlatkérés elküldése</span>
+                  </>
+                ) : (
+                  <>
+                    <FiPhoneCall className="w-4 h-4" />
+                    <span>Visszahívás kérése</span>
+                  </>
+                )}
+              </button>
+
+              <p className="text-center text-[11px] text-white/50 font-light mt-2">
+                A beállított méreteket ({Number(width).toFixed(1)}m ×{" "}
+                {Number(length).toFixed(1)}m) automatikusan csatoljuk.
+              </p>
+            </form>
+          )}
         </div>
       </div>
     </section>

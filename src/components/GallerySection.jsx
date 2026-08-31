@@ -1,172 +1,260 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
-import { FiChevronLeft, FiChevronRight, FiCheckCircle, FiEye } from 'react-icons/fi';
-import { MdOutlinePool } from 'react-icons/md';
+import Image from "next/image";
+import { useState, useEffect, useCallback } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import "swiper/css";
+
+// 3 columns of curated reference photos with varied aspect ratios and heights
+const COL_1 = [
+  { src: "/references/LAKESIDE-22.webp", aspect: "aspect-[4/3]" },
+  { src: "/references/GRES-1.webp", aspect: "aspect-[16/10]" },
+  { src: "/references/LOMBARD-PAVILION-20.webp", aspect: "aspect-square" },
+  { src: "/references/VERDE-1.webp", aspect: "aspect-[4/3]" },
+  { src: "/references/NIGHT-1.webp", aspect: "aspect-[16/10]" },
+  { src: "/references/LAKESIDE-12.webp", aspect: "aspect-[3/2]" },
+];
+
+const COL_2 = [
+  { src: "/references/LOMBARD-PAVILION-30.webp", aspect: "aspect-[16/10]" },
+  { src: "/references/GRES-DRONE-1.webp", aspect: "aspect-[4/3]" },
+  { src: "/references/LAKESIDE-15.webp", aspect: "aspect-square" },
+  { src: "/references/VERDE-5.webp", aspect: "aspect-[16/10]" },
+  { src: "/references/NIGHT-3.webp", aspect: "aspect-[4/3]" },
+  { src: "/references/LOMBARD-PAVILION-14.webp", aspect: "aspect-[3/2]" },
+];
+
+const COL_3 = [
+  { src: "/references/LAKESIDE-2.webp", aspect: "aspect-square" },
+  { src: "/references/GRES-3.webp", aspect: "aspect-[4/3]" },
+  { src: "/references/LOMBARD-PAVILION-7.webp", aspect: "aspect-[16/10]" },
+  { src: "/references/LAKESIDE-DRONE-1.webp", aspect: "aspect-[16/10]" },
+  { src: "/references/VERDE-7.webp", aspect: "aspect-[4/3]" },
+  { src: "/references/LAKESIDE-28.webp", aspect: "aspect-square" },
+];
+
+// Flat array of all photos for Lightbox and Mobile Swiper
+const ALL_PHOTOS = [...COL_1, ...COL_2, ...COL_3];
 
 export default function GallerySection() {
-  const slides = [
-    {
-      title: 'Modern Antracit Kivitel – Minimalista Villa',
-      location: 'Budapest, II. kerület',
-      tag: 'Antracit Szürke',
-      aspect: '8 × 4 méteres medence',
-      description: 'Diszkrét sötétszürke fedés, amely tökéletesen harmonizál a modern antracit nyílászárókkal és kőburkolattal.',
-      bgGradient: 'from-slate-800 via-slate-700 to-slate-900',
-      accentColor: '#F28C48',
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  // Keyboard navigation for Lightbox
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (lightboxIndex === null) return;
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft") {
+        setLightboxIndex(
+          (prev) => (prev - 1 + ALL_PHOTOS.length) % ALL_PHOTOS.length,
+        );
+      }
+      if (e.key === "ArrowRight") {
+        setLightboxIndex((prev) => (prev + 1) % ALL_PHOTOS.length);
+      }
     },
-    {
-      title: 'Elegáns Homok / Bézs – Mediterrán Kert',
-      location: 'Balatonfüred',
-      tag: 'Homok Bézs',
-      aspect: '10 × 4 méteres medence',
-      description: 'Lágy, meleg árnyalat, amely a természetes mészkő és fa teraszburkolatokhoz nyújt prémium illeszkedést.',
-      bgGradient: 'from-amber-900/60 via-amber-800/40 to-slate-900',
-      accentColor: '#D7C4B7',
-    },
-    {
-      title: 'Lépésállósági & Biztonsági Megbízhatóság',
-      location: 'Szentendre',
-      tag: '150 kg/m² Teherbírás',
-      aspect: 'Családi biztonság',
-      description: 'A feszes zip membrán akár felnőttek és gyermekek egyidejű súlyát is biztonságosan megtartja.',
-      bgGradient: 'from-blue-950 via-indigo-900/50 to-slate-900',
-      accentColor: '#38bdf8',
-    },
-    {
-      title: 'Rejtett Sínpálya & Süllyesztett Csévélő',
-      location: 'Győr',
-      tag: 'Minimál Részletek',
-      aspect: 'Síkba simuló profil',
-      description: 'A terasz szintjébe integrált alumínium vezetősín mezítláb is teljesen kényelmes és akadálymentes.',
-      bgGradient: 'from-slate-900 via-sky-950 to-slate-900',
-      accentColor: '#F28C48',
-    },
-  ];
+    [lightboxIndex],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  const openLightboxBySrc = (src) => {
+    const idx = ALL_PHOTOS.findIndex((p) => p.src === src);
+    if (idx !== -1) setLightboxIndex(idx);
+  };
 
   return (
-    <section id="galeria" className="py-24 bg-white relative">
+    <section
+      id="referenciak"
+      className="py-20 md:py-28 bg-white relative overflow-hidden"
+    >
+      <div id="galeria" className="sr-only" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary text-primary font-bold text-xs uppercase tracking-wider mb-4">
-              Referenciák & Részletek
-            </div>
-            <h2 className="fluid-section-title font-extrabold text-primary">
-              Valós beépítések és <br className="hidden sm:inline" />
-              <span className="text-slate-900">stílusos színváltozatok</span>
-            </h2>
+        <div className="text-center max-w-3xl mx-auto mb-14 md:mb-18">
+          <div
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF6FE] text-[#2C4295] font-semibold text-xs uppercase tracking-widest mb-3.5 border-none"
+          >
+            Referenciák • Valós Kertek
+          </div>
+          <h2
+            style={{ fontFamily: "'Louvette Display', serif" }}
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#2C4295] font-semibold leading-[1.15] mb-4"
+          >
+            Referenciák
+          </h2>
+          <p
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="text-slate-600 text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
+          >
+            Fedezze fel a legújabb medencefedési projektjeinket, és merítsen
+            inspirációt a harmonikusan illeszkedő kerti megoldásokból.
+          </p>
+        </div>
+
+        {/* ══ DESKTOP: 3-Column Staggered Masonry Gallery ══════════════════ */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 lg:gap-8 items-start">
+          {/* Column 1 (No offset) */}
+          <div className="flex flex-col gap-6 lg:gap-8">
+            {COL_1.map((photo) => (
+              <div
+                key={photo.src}
+                onClick={() => openLightboxBySrc(photo.src)}
+                className={`relative w-full ${photo.aspect} rounded-[22px] md:rounded-[26px] overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(242,140,72,0.45)] bg-slate-100 border-none shadow-none group`}
+              >
+                <Image
+                  src={photo.src}
+                  alt="Poolzip referencia fotó"
+                  fill
+                  unoptimized
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+            ))}
           </div>
 
-          {/* Custom Navigation Buttons */}
-          <div className="flex items-center gap-3 mt-6 md:mt-0">
-            <button
-              id="swiper-prev-btn"
-              aria-label="Előző kép"
-              className="w-12 h-12 rounded-full border border-slate-200 bg-white hover:bg-secondary/40 text-primary flex items-center justify-center transition-colors shadow-sm"
-            >
-              <FiChevronLeft className="w-6 h-6" />
-            </button>
-            <button
-              id="swiper-next-btn"
-              aria-label="Következő kép"
-              className="w-12 h-12 rounded-full border border-slate-200 bg-white hover:bg-secondary/40 text-primary flex items-center justify-center transition-colors shadow-sm"
-            >
-              <FiChevronRight className="w-6 h-6" />
-            </button>
+          {/* Column 2 (Offset by pt-14 for organic staggering) */}
+          <div className="flex flex-col gap-6 lg:gap-8 pt-10 lg:pt-14">
+            {COL_2.map((photo) => (
+              <div
+                key={photo.src}
+                onClick={() => openLightboxBySrc(photo.src)}
+                className={`relative w-full ${photo.aspect} rounded-[22px] md:rounded-[26px] overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(242,140,72,0.45)] bg-slate-100 border-none shadow-none group`}
+              >
+                <Image
+                  src={photo.src}
+                  alt="Poolzip referencia fotó"
+                  fill
+                  unoptimized
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Column 3 (Offset by pt-7 for varied staggered rhythm) */}
+          <div className="flex flex-col gap-6 lg:gap-8 pt-5 lg:pt-7">
+            {COL_3.map((photo) => (
+              <div
+                key={photo.src}
+                onClick={() => openLightboxBySrc(photo.src)}
+                className={`relative w-full ${photo.aspect} rounded-[22px] md:rounded-[26px] overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(242,140,72,0.45)] bg-slate-100 border-none shadow-none group`}
+              >
+                <Image
+                  src={photo.src}
+                  alt="Poolzip referencia fotó"
+                  fill
+                  unoptimized
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Swiper Slider */}
-        <div className="relative">
+        {/* ══ MOBILE: Horizontal Swiper (No long scrolling on small screens) ════ */}
+        <div className="md:hidden w-full overflow-hidden">
           <Swiper
-            modules={[Navigation, Pagination, Autoplay]}
-            spaceBetween={24}
-            slidesPerView={1}
-            breakpoints={{
-              640: { slidesPerView: 1.2 },
-              1024: { slidesPerView: 2 },
-            }}
-            navigation={{
-              prevEl: '#swiper-prev-btn',
-              nextEl: '#swiper-next-btn',
-            }}
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            className="pb-14"
+            slidesPerView={1.15}
+            spaceBetween={14}
+            centeredSlides={true}
+            initialSlide={1}
+            className="w-full py-2"
           >
-            {slides.map((slide, index) => (
-              <SwiperSlide key={index} className="h-auto">
-                <div className="h-full rounded-3xl overflow-hidden border border-slate-100 bg-slate-900 shadow-card-soft flex flex-col group">
-                  {/* Visual Image Screen */}
-                  <div className={`relative aspect-[16/10] bg-gradient-to-tr ${slide.bgGradient} p-6 flex flex-col justify-between overflow-hidden`}>
-                    {/* Visual pattern representation */}
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
-                    
-                    {/* Top Tag Badges */}
-                    <div className="relative z-10 flex items-center justify-between">
-                      <span className="text-xs font-bold bg-white/90 text-slate-900 px-3 py-1.5 rounded-full shadow-sm">
-                        {slide.tag}
-                      </span>
-                      <span className="text-xs font-semibold text-white/90 bg-slate-950/60 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                        {slide.aspect}
-                      </span>
-                    </div>
-
-                    {/* Architectural Vector Visual of Pool */}
-                    <div className="relative z-10 my-auto flex items-center justify-center py-4">
-                      <div className="w-full max-w-xs h-28 rounded-xl border-2 border-white/20 relative overflow-hidden flex items-center justify-center shadow-lg bg-slate-950/40 backdrop-blur-sm">
-                        <div className="absolute inset-0 bg-cyan-600/30 flex items-center justify-center">
-                          <span className="text-xs text-cyan-200 font-semibold tracking-wider uppercase">Tükörsima Vízfelület</span>
-                        </div>
-                        <div 
-                          className="absolute inset-y-0 left-0 w-3/4 transition-all duration-700 group-hover:w-full flex items-center justify-center border-r-2 border-accent"
-                          style={{
-                            backgroundColor: slide.accentColor === '#D7C4B7' ? '#a8988b' : slide.accentColor === '#38bdf8' ? '#1e3a8a' : '#475569'
-                          }}
-                        >
-                          <span className="text-[11px] font-bold text-white px-2 py-0.5 rounded bg-black/40">
-                            Poolzip Zárt Membrán
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Location Indicator */}
-                    <div className="relative z-10 flex items-center justify-between text-xs text-white/90">
-                      <span className="font-medium flex items-center gap-1.5">
-                        <MdOutlinePool className="text-accent w-4 h-4" />
-                        {slide.location}
-                      </span>
-                      <span className="text-[11px] text-slate-300">10 Év Garancia</span>
-                    </div>
-                  </div>
-
-                  {/* Text Content */}
-                  <div className="p-6 bg-white flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">
-                        {slide.title}
-                      </h3>
-                      <p className="text-sm text-slate-600 leading-relaxed font-normal">
-                        {slide.description}
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500 font-medium">Anyag: Prémium PVC-kompozit</span>
-                      <span className="font-bold text-primary">Síkba süllyesztett sín</span>
-                    </div>
-                  </div>
+            {ALL_PHOTOS.map((photo, i) => (
+              <SwiperSlide key={photo.src} className="w-full">
+                <div
+                  onClick={() => setLightboxIndex(i)}
+                  className="relative w-full aspect-[4/3] rounded-[22px] overflow-hidden cursor-pointer bg-slate-100 shadow-md border-none"
+                >
+                  <Image
+                    src={photo.src}
+                    alt="Poolzip referencia fotó"
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
                 </div>
               </SwiperSlide>
             ))}
           </Swiper>
+          <p
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="text-center text-xs text-slate-400 mt-2 font-light"
+          >
+            Húzza oldalra a további képekhez • Érintse meg a nagyításhoz
+          </p>
         </div>
       </div>
+
+      {/* ══ FULLSCREEN LIGHTBOX MODAL ══════════════════════════════════════ */}
+      {lightboxIndex !== null && (
+        <div
+          onClick={() => setLightboxIndex(null)}
+          className="fixed inset-0 z-[100] backdrop-blur-md bg-black/5 flex items-center justify-center p-4 sm:p-8 select-none"
+        >
+          {/* Close button - Brand Navy Blue */}
+          <button
+            onClick={() => setLightboxIndex(null)}
+            className="absolute top-5 right-5 z-50 w-11 h-11 rounded-full bg-white shadow-md hover:shadow-lg text-[#2C4295] hover:text-[#F28C48] flex items-center justify-center transition-all duration-200 focus:outline-none border border-slate-100 cursor-pointer"
+            aria-label="Bezárás"
+          >
+            <FiX className="w-6 h-6" />
+          </button>
+
+          {/* Prev Arrow - Brand Navy Blue */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxIndex(
+                (prev) => (prev - 1 + ALL_PHOTOS.length) % ALL_PHOTOS.length,
+              );
+            }}
+            className="absolute left-4 sm:left-6 z-50 w-12 h-12 rounded-full bg-white shadow-md hover:shadow-lg text-[#2C4295] hover:text-[#F28C48] flex items-center justify-center transition-all duration-200 focus:outline-none border border-slate-100 cursor-pointer"
+            aria-label="Előző kép"
+          >
+            <FiChevronLeft className="w-6 h-6" />
+          </button>
+
+          {/* Next Arrow - Brand Navy Blue */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxIndex((prev) => (prev + 1) % ALL_PHOTOS.length);
+            }}
+            className="absolute right-4 sm:right-6 z-50 w-12 h-12 rounded-full bg-white shadow-md hover:shadow-lg text-[#2C4295] hover:text-[#F28C48] flex items-center justify-center transition-all duration-200 focus:outline-none border border-slate-100 cursor-pointer"
+            aria-label="Következő kép"
+          >
+            <FiChevronRight className="w-6 h-6" />
+          </button>
+
+          {/* Main Displayed Image - Shadow adheres strictly to the exact photo boundary */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex items-center justify-center max-h-[85vh] max-w-[90vw]"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ALL_PHOTOS[lightboxIndex].src}
+              alt="Poolzip referencia nagyított nézet"
+              className="max-h-[82vh] max-w-[90vw] w-auto h-auto object-contain rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.18)] select-none"
+            />
+          </div>
+
+          {/* Counter at bottom - Brand Navy Blue */}
+          <div
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md text-[#2C4295] text-xs font-bold px-4 py-1.5 rounded-full shadow-md border border-slate-100"
+          >
+            {lightboxIndex + 1} / {ALL_PHOTOS.length}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
