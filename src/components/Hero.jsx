@@ -153,7 +153,7 @@ export default function Hero() {
       {/* ── Background Video ─────────────────────────────────────────────── */}
       <video
         className="absolute inset-0 w-full h-full object-cover"
-        src="/videos/POOLZIP_Vid%C3%A9o_Gres_optimized.mp4"
+        src="/videos/Poolzip-hero-2.mp4"
         autoPlay
         loop
         muted
