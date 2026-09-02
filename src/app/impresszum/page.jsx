@@ -115,8 +115,8 @@ export default function ImpresszumPage() {
                 <FiPhone className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <div className="text-xs text-slate-500 font-semibold uppercase">Telefonszám</div>
-                  <a href="tel:+36301234567" className="font-bold text-slate-900 hover:text-accent">
-                    +36 (30) 123 4567
+                  <a href="tel:+36703730220" className="font-bold text-slate-900 hover:text-accent">
+                    06 70 373 0220
                   </a>
                 </div>
               </div>

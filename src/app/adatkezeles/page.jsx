@@ -73,7 +73,7 @@ export default function AdatkezelesPage() {
               <div><strong className="text-slate-900">Adószám:</strong> [00000000-0-00]</div>
               <div><strong className="text-slate-900">Képviselő:</strong> [Ügyvezető neve]</div>
               <div><strong className="text-slate-900">E-mail:</strong> <a href="mailto:info@poolzip.hu" className="text-primary font-medium hover:underline">info@poolzip.hu</a></div>
-              <div><strong className="text-slate-900">Telefon:</strong> +36 (30) 123 4567</div>
+              <div><strong className="text-slate-900">Telefon:</strong> <a href="tel:+36703730220" className="text-primary hover:underline">06 70 373 0220</a></div>
               <div><strong className="text-slate-900">Weboldal:</strong> https://poolzip.hu</div>
             </div>
             <p className="text-xs text-slate-500">

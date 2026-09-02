@@ -440,7 +440,7 @@ export default function Calculator() {
                       type="tel"
                       name="phone"
                       required
-                      placeholder="+36 30 123 4567"
+                      placeholder="06 70 373 0220"
                       value={formData.phone}
                       onChange={handleInputChange}
                       className="w-full bg-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#F28C48] transition-all border-none"

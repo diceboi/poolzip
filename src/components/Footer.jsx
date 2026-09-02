@@ -106,7 +106,9 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <FiPhone className="w-5 h-5 text-[#F28C48] flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-white">+36 (30) 123 4567</div>
+                  <a href="tel:+36703730220" className="font-semibold text-white hover:text-[#F28C48] transition-colors block">
+                    06 70 373 0220
+                  </a>
                   <div className="text-xs text-secondary/60">Hétfő – Péntek: 8:00 – 17:00</div>
                 </div>
               </li>

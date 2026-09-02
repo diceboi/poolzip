@@ -70,7 +70,7 @@ export default function AszfPage() {
               <div><strong className="text-slate-900">Bankszámlaszám:</strong> [00000000-00000000-00000000]</div>
               <div><strong className="text-slate-900">Képviselő:</strong> [Ügyvezető neve]</div>
               <div><strong className="text-slate-900">E-mail:</strong> <a href="mailto:info@poolzip.hu" className="text-primary font-medium hover:underline">info@poolzip.hu</a></div>
-              <div><strong className="text-slate-900">Telefonszám:</strong> +36 (30) 123 4567</div>
+              <div><strong className="text-slate-900">Telefonszám:</strong> <a href="tel:+36703730220" className="text-primary hover:underline">06 70 373 0220</a></div>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600">
               <strong>Tárhelyszolgáltatók:</strong> Vercel Inc. (Alkalmazás-kiszolgálás, 440 N Barranca Ave #4133, Covina, CA 91723, USA) és Rackhost Zrt. (Domain és DNS, 6722 Szeged, Tisza Lajos krt. 41., Cg.: 06-10-001004).

@@ -73,7 +73,7 @@ export default function Header() {
         {/* Right side — phone + CTA */}
         <div className="hidden sm:flex items-center gap-3 flex-shrink-0 justify-end">
           <a
-            href="tel:+36301234567"
+            href="tel:+36703730220"
             style={{ fontFamily: "Gotham, sans-serif" }}
             className={`hidden xl:flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-full border transition-all duration-200 ${
               isScrolled
@@ -82,7 +82,7 @@ export default function Header() {
             }`}
           >
             <FiPhone className="w-3.5 h-3.5" />
-            <span>+36 (30) 123 4567</span>
+            <span>06 70 373 0220</span>
           </a>
 
           <a
@@ -129,12 +129,12 @@ export default function Header() {
             ))}
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-2.5 mt-2">
               <a
-                href="tel:+36301234567"
+                href="tel:+36703730220"
                 className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-[#2C4295] bg-[#D4EDFC]/70 hover:bg-[#D4EDFC] rounded-xl transition-colors"
                 style={{ fontFamily: "Gotham, sans-serif" }}
               >
                 <FiPhone className="w-4 h-4" />
-                <span>+36 (30) 123 4567</span>
+                <span>06 70 373 0220</span>
               </a>
               <a
                 href="/#kalkulator"
