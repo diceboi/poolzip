@@ -2,23 +2,51 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const {
-      formMode = 'email',
-      name = '',
-      email = '',
-      phone = '',
-      timeSlot = 'Bármikor a mai napon',
-      note = '',
-      width = '4.0',
-      length = '8.0',
-      color = 'Antracitszürke',
-    } = body;
+    let formMode = 'email';
+    let name = '';
+    let email = '';
+    let phone = '';
+    let timeSlot = 'Bármikor a mai napon';
+    let note = '';
+    let width = '4.0';
+    let length = '8.0';
+    let color = 'Antracitszürke';
+    let liner = 'Adriakék (Alkorplan 1000/2000)';
+    let photoFile = null;
+
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      formMode = formData.get('formMode') || 'email';
+      name = formData.get('name') || '';
+      email = formData.get('email') || '';
+      phone = formData.get('phone') || '';
+      timeSlot = formData.get('timeSlot') || 'Bármikor a mai napon';
+      note = formData.get('note') || '';
+      width = formData.get('width') || '4.0';
+      length = formData.get('length') || '8.0';
+      color = formData.get('color') || 'Antracitszürke';
+      liner = formData.get('liner') || 'Adriakék (Alkorplan 1000/2000)';
+      photoFile = formData.get('photo');
+    } else {
+      const body = await request.json();
+      formMode = body.formMode || 'email';
+      name = body.name || '';
+      email = body.email || '';
+      phone = body.phone || '';
+      timeSlot = body.timeSlot || 'Bármikor a mai napon';
+      note = body.note || '';
+      width = body.width || '4.0';
+      length = body.length || '8.0';
+      color = body.color || 'Antracitszürke';
+      liner = body.liner || 'Adriakék (Alkorplan 1000/2000)';
+    }
 
     // Validate required fields
     if (!name || !phone) {
@@ -43,10 +71,6 @@ export async function POST(request) {
       timeZone: 'Europe/Budapest',
     }).format(new Date());
 
-    const subject = isCallback
-      ? `📞 Új Visszahívás Kérése: ${name} (${phone})`
-      : `📋 Új Ajánlatkérés: ${name} (${width}m × ${length}m medence)`;
-
     // Attach official white logo inline (CID)
     const logoPath = path.join(process.cwd(), 'public', 'logos', 'poolzip-logo.png');
     let attachments = [];
@@ -58,6 +82,50 @@ export async function POST(request) {
         cid: 'poolzip-logo',
       });
     }
+
+    // Process optional pool photo attachment
+    let photoAttachedInfo = null;
+    if (photoFile && typeof photoFile === 'object' && photoFile.size > 0) {
+      try {
+        const rawBuffer = Buffer.from(await photoFile.arrayBuffer());
+        let optimizedBuffer = rawBuffer;
+        let finalFilename = photoFile.name || 'ugyfel-medence.jpg';
+
+        // Optimize if larger than 1 MB or not already a web-friendly size
+        if (rawBuffer.length > 1024 * 1024) {
+          try {
+            optimizedBuffer = await sharp(rawBuffer)
+              .rotate() // Auto-orient according to EXIF data from phone cameras
+              .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+              .jpeg({ quality: 85 })
+              .toBuffer();
+            if (!finalFilename.toLowerCase().endsWith('.jpg') && !finalFilename.toLowerCase().endsWith('.jpeg')) {
+              finalFilename = `${finalFilename.replace(/\.[^/.]+$/, '')}.jpg`;
+            }
+          } catch (sharpErr) {
+            console.warn('Sharp optimization fallback:', sharpErr);
+            optimizedBuffer = rawBuffer;
+          }
+        }
+
+        attachments.push({
+          filename: finalFilename,
+          content: optimizedBuffer.toString('base64'),
+        });
+
+        const sizeInMb = (optimizedBuffer.length / (1024 * 1024)).toFixed(2);
+        photoAttachedInfo = {
+          name: finalFilename,
+          size: `${sizeInMb} MB`,
+        };
+      } catch (fileErr) {
+        console.error('Error processing attached photo:', fileErr);
+      }
+    }
+
+    const subject = isCallback
+      ? `📞 Új Visszahívás Kérése: ${name} (${phone})${photoAttachedInfo ? ' 📸 [Fotóval]' : ''}`
+      : `📋 Új Ajánlatkérés: ${name} (${width}m × ${length}m medence)${photoAttachedInfo ? ' 📸 [Fotóval]' : ''}`;
 
     // HTML Email Template
     const html = `
@@ -159,11 +227,25 @@ export async function POST(request) {
                   <td style="padding: 10px 0; font-size: 15px; font-weight: 700; color: #2C4295; border-top: 1px solid #f1f5f9;">~${area} m²</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 0; font-size: 14px; color: #64748b; border-top: 1px solid #f1f5f9;">Választott szín:</td>
+                  <td style="padding: 10px 0; font-size: 14px; color: #64748b; border-top: 1px solid #f1f5f9;">Ponyva színe:</td>
                   <td style="padding: 10px 0; font-size: 15px; font-weight: 600; color: #0f172a; border-top: 1px solid #f1f5f9;">
                     ${color}
                   </td>
                 </tr>
+                ${liner ? `
+                <tr>
+                  <td style="padding: 10px 0; font-size: 14px; color: #64748b; border-top: 1px solid #f1f5f9;">Medence belső fólia színe:</td>
+                  <td style="padding: 10px 0; font-size: 15px; font-weight: 700; color: #2C4295; border-top: 1px solid #f1f5f9;">
+                    ${liner}
+                  </td>
+                </tr>` : ''}
+                ${photoAttachedInfo ? `
+                <tr>
+                  <td style="padding: 10px 0; font-size: 14px; color: #64748b; border-top: 1px solid #f1f5f9;">Csatolt medencefotó:</td>
+                  <td style="padding: 10px 0; font-size: 14px; font-weight: 700; color: #16a34a; border-top: 1px solid #f1f5f9;">
+                    📸 ${photoAttachedInfo.name} (${photoAttachedInfo.size}) - Csatolmányként mellékelve
+                  </td>
+                </tr>` : ''}
               </table>
 
               ${note ? `

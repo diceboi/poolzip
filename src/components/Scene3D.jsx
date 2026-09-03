@@ -5,9 +5,11 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, OrbitControls, PerspectiveCamera, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { FiPlus, FiMinus, FiSearch } from 'react-icons/fi';
+import { getLinerById, DEFAULT_LINER_ID } from '../data/linerData';
 
 // Preload the updated Pool GLB model
 useGLTF.preload('/models/Pool.glb');
+
 
 function getProgress(val) {
   if (typeof val === 'number') {
@@ -60,7 +62,7 @@ function TwoFingersIcon() {
   );
 }
 
-function PoolGLBModel({ poolWidth = 4, poolLength = 8, coverState = 50, color = 'grey' }) {
+function PoolGLBModel({ poolWidth = 4, poolLength = 8, coverState = 50, color = 'grey', linerId = DEFAULT_LINER_ID }) {
   const { nodes, materials } = useGLTF('/models/Pool.glb');
 
   // Animated state ref for smooth lerping
@@ -213,6 +215,74 @@ function PoolGLBModel({ poolWidth = 4, poolLength = 8, coverState = 50, color = 
     }
   }, [color, materials]);
 
+  // Material instances for solid (homogén, sima szín) vs patterned (mozaik/minta) liners
+  const linerMaterialsRef = useRef({
+    solid: null,
+    pattern: null,
+  });
+
+  // Dynamic liner color and water color updating based on selected foil
+  useEffect(() => {
+    if (!nodes.PoolHole) return;
+    const activeLiner = getLinerById(linerId);
+    if (!activeLiner) return;
+
+    // Lazily initialize materials
+    if (!linerMaterialsRef.current.pattern) {
+      const baseTile = materials['pool tiles'];
+      if (baseTile) {
+        const pMat = baseTile.clone();
+        if (pMat.map) {
+          pMat.map = baseTile.map.clone();
+          pMat.map.wrapS = THREE.RepeatWrapping;
+          pMat.map.wrapT = THREE.RepeatWrapping;
+        }
+        if (pMat.normalMap) {
+          pMat.normalMap = baseTile.normalMap.clone();
+          pMat.normalMap.wrapS = THREE.RepeatWrapping;
+          pMat.normalMap.wrapT = THREE.RepeatWrapping;
+        }
+        pMat.roughness = 0.25;
+        pMat.metalness = 0.05;
+        linerMaterialsRef.current.pattern = pMat;
+      }
+    }
+    if (!linerMaterialsRef.current.solid) {
+      linerMaterialsRef.current.solid = new THREE.MeshStandardMaterial({
+        roughness: 0.35,
+        metalness: 0.02,
+      });
+    }
+
+    const { solid, pattern } = linerMaterialsRef.current;
+    if (activeLiner.category === 'solid' && solid) {
+      // Homogén, sima szín textúraminta nélkül
+      solid.color.set(activeLiner.colorHex);
+      solid.needsUpdate = true;
+      nodes.PoolHole.material = solid;
+    } else if (pattern) {
+      // Mintás fólia: mozaik textúra a választott árnyalattal színezve
+      pattern.color.set(activeLiner.colorHex);
+      pattern.needsUpdate = true;
+      nodes.PoolHole.material = pattern;
+    }
+
+    // Adapt water color & physical light attenuation to match the liner reflection
+    if (nodes.WaterSurface && nodes.WaterSurface.material) {
+      const wMat = nodes.WaterSurface.material;
+      if (wMat.color && activeLiner.waterColor) {
+        wMat.color.set(activeLiner.waterColor);
+      }
+      if (wMat.attenuationColor && activeLiner.waterAttenuation) {
+        wMat.attenuationColor.set(activeLiner.waterAttenuation);
+      }
+      if (activeLiner.waterDistance) {
+        wMat.attenuationDistance = activeLiner.waterDistance;
+      }
+      wMat.needsUpdate = true;
+    }
+  }, [linerId, nodes, materials]);
+
   useFrame((state, delta) => {
     // 1. Smooth lerping for parameters
     const lerpSpeed = Math.min(1, delta * 8);
@@ -232,15 +302,13 @@ function PoolGLBModel({ poolWidth = 4, poolLength = 8, coverState = 50, color = 
     const widthScale = curW / 2.0;
     const lengthScale = curL / 4.0;
 
-    // Mosaic tiles repeat
-    const tileMat = materials['pool tiles'];
-    if (tileMat) {
+    // Pool liner texture repeat scaling (only for patterned material with map)
+    const holeMat = nodes.PoolHole?.material;
+    if (holeMat && holeMat.map) {
       const tileDensity = 14.0;
-      if (tileMat.map) {
-        tileMat.map.repeat.set(widthScale * tileDensity, lengthScale * tileDensity);
-      }
-      if (tileMat.normalMap) {
-        tileMat.normalMap.repeat.set(widthScale * tileDensity, lengthScale * tileDensity);
+      holeMat.map.repeat.set(widthScale * tileDensity, lengthScale * tileDensity);
+      if (holeMat.normalMap) {
+        holeMat.normalMap.repeat.set(widthScale * tileDensity, lengthScale * tileDensity);
       }
     }
 
@@ -421,6 +489,7 @@ export default function Scene3D({
   poolLength = 8,
   coverState = 50,
   color = 'grey',
+  linerId = DEFAULT_LINER_ID,
 }) {
   const controlsRef = useRef();
   const [zoom, setZoom] = useState(50); // 0 (far) to 100 (close)
@@ -468,6 +537,7 @@ export default function Scene3D({
             poolLength={poolLength}
             coverState={coverState}
             color={color}
+            linerId={linerId}
           />
         </Suspense>
 
@@ -483,6 +553,7 @@ export default function Scene3D({
         {/* 360 Orbit Controls: Left=Rotate, Right=Pan */}
         <OrbitControls
           ref={controlsRef}
+          target={[0, -0.4, 0]}
           enableZoom={false}
           enablePan={true}
           minDistance={3.5}

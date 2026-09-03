@@ -13,9 +13,15 @@ import {
   FiRotateCw,
   FiClock,
   FiMaximize2,
+  FiCamera,
+  FiX,
 } from "react-icons/fi";
-
-
+import {
+  POOL_LINERS,
+  LINER_CATEGORIES,
+  getLinerById,
+  DEFAULT_LINER_ID,
+} from "../data/linerData";
 
 // Dynamic import of 3D Scene with SSR disabled for Next.js
 const Scene3D = dynamic(() => import("./Scene3D"), {
@@ -39,6 +45,8 @@ export default function Calculator() {
   const [length, setLength] = useState(8.0); // 4.5m - 14.0m (step 0.1)
   const [coverProgress, setCoverProgress] = useState(65); // 0% - 100% (step 1)
   const [color, setColor] = useState("grey"); // 'grey' | 'beige'
+  const [selectedLinerId, setSelectedLinerId] = useState(DEFAULT_LINER_ID);
+  const [linerCategory, setLinerCategory] = useState("all");
 
   // Action Form Tab: 'email' | 'callback'
   const [formMode, setFormMode] = useState("email");
@@ -55,6 +63,34 @@ export default function Calculator() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Optional Pool Photo Attachment
+  const [poolPhoto, setPoolPhoto] = useState(null);
+  const [poolPhotoPreview, setPoolPhotoPreview] = useState(null);
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 12 * 1024 * 1024) {
+        setErrorMessage(
+          "A kiválasztott fotó mérete túl nagy (maximum 10 MB engedélyezett).",
+        );
+        return;
+      }
+      setErrorMessage("");
+      setPoolPhoto(file);
+      const url = URL.createObjectURL(file);
+      setPoolPhotoPreview(url);
+    }
+  };
+
+  const removePhoto = () => {
+    if (poolPhotoPreview) {
+      URL.revokeObjectURL(poolPhotoPreview);
+    }
+    setPoolPhoto(null);
+    setPoolPhotoPreview(null);
+  };
 
   useEffect(() => {
     const handleHash = () => {
@@ -88,20 +124,25 @@ export default function Calculator() {
     setErrorMessage("");
 
     try {
+      const activeLiner = getLinerById(selectedLinerId);
+      const fd = new FormData();
+      fd.append("formMode", formMode);
+      fd.append("name", formData.name);
+      fd.append("email", formData.email);
+      fd.append("phone", formData.phone);
+      fd.append("timeSlot", formData.timeSlot);
+      fd.append("note", formData.note);
+      fd.append("width", Number(width).toFixed(1));
+      fd.append("length", Number(length).toFixed(1));
+      fd.append("color", color === "beige" ? "Bézs" : "Antracitszürke");
+      fd.append("liner", `${activeLiner.name} (${activeLiner.series})`);
+      if (poolPhoto) {
+        fd.append("photo", poolPhoto);
+      }
+
       const res = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          formMode,
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          timeSlot: formData.timeSlot,
-          note: formData.note,
-          width: Number(width).toFixed(1),
-          length: Number(length).toFixed(1),
-          color: color === "beige" ? "Bézs" : "Antracitszürke",
-        }),
+        body: fd,
       });
 
       const data = await res.json();
@@ -111,6 +152,7 @@ export default function Calculator() {
       }
 
       setIsSubmitted(true);
+      removePhoto();
 
       try {
         confetti({
@@ -125,7 +167,8 @@ export default function Calculator() {
     } catch (err) {
       console.error("Form submit error:", err);
       setErrorMessage(
-        err.message || "Nem sikerült elküldeni a megkeresést. Kérjük próbálja meg később!"
+        err.message ||
+          "Nem sikerült elküldeni a megkeresést. Kérjük próbálja meg később!",
       );
     } finally {
       setIsSubmitting(false);
@@ -147,7 +190,7 @@ export default function Calculator() {
   return (
     <section
       id="kalkulator"
-      className="py-20 md:py-28 bg-[#2C4295] relative overflow-hidden text-white"
+      className="pt-12 pb-16 sm:pt-16 sm:pb-20 md:pt-20 md:pb-24 bg-[#2C4295] relative overflow-hidden text-white"
     >
       {/* Background Ambience / Subtle Brand Glows */}
       <div className="absolute top-0 right-0 w-[550px] h-[550px] bg-white/5 rounded-full blur-[140px] pointer-events-none" />
@@ -155,22 +198,22 @@ export default function Calculator() {
 
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-4 md:mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-1 sm:mb-2 md:mb-3">
           <div
             style={{ fontFamily: "Gotham, sans-serif" }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-white font-semibold text-xs uppercase tracking-widest mb-3.5"
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-white font-semibold text-xs uppercase tracking-widest mb-2.5"
           >
             Interaktív 3D Tervező
           </div>
           <h2
             style={{ fontFamily: "'Louvette Display', serif" }}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white font-semibold leading-[1.15] mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white font-semibold leading-[1.15] mb-2.5"
           >
             Tervezze meg saját medencefedését
           </h2>
           <p
             style={{ fontFamily: "Gotham, sans-serif" }}
-            className="text-white/80 text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
+            className="text-white/80 text-xs sm:text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
           >
             Állítsa be a méreteket, tesztelje a nyitási és zárási folyamatot
             valós időben, és kérjen közvetlenül ajánlatot vagy visszahívást!
@@ -179,13 +222,13 @@ export default function Calculator() {
       </div>
 
       {/* ══ 100% FULL-WIDTH 3D VIEWPORT (EDGE-TO-EDGE ON BOTH MOBILE & DESKTOP) ════ */}
-      <div className="relative w-full h-[360px] sm:h-[440px] md:h-[540px] lg:h-[640px] flex items-center justify-center my-1 select-none">
+      <div className="relative w-full h-[360px] sm:h-[440px] md:h-[540px] lg:h-[640px] flex items-center justify-center -mt-2 sm:-mt-4 md:-mt-6 select-none">
         {/* 🌟 Luminous circular halo peeking out from behind the pool model into the navy background 🌟 */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] sm:w-[540px] sm:h-[540px] md:w-[720px] md:h-[720px] lg:w-[900px] lg:h-[900px] rounded-full bg-sky-300/20 blur-[95px] pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] sm:w-[380px] sm:h-[380px] md:w-[480px] md:h-[480px] rounded-full bg-white/20 blur-[65px] pointer-events-none" />
 
         {/* Floating Dimension Pill over 3D model */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-white/15 backdrop-blur-md px-5 py-2 rounded-full text-xs font-semibold text-white shadow-sm border-none pointer-events-none w-[80%] max-w-sm justify-center m-auto">
+        <div className="absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-white/15 backdrop-blur-md px-5 py-2 rounded-full text-xs font-semibold text-white shadow-sm border-none pointer-events-none w-[80%] max-w-sm justify-center m-auto">
           <span className="w-2 h-2 rounded-full bg-[#F28C48] animate-pulse flex-shrink-0" />
           <span
             className="min-w-fit"
@@ -209,6 +252,7 @@ export default function Calculator() {
             poolLength={Number(length)}
             coverState={Number(coverProgress)}
             color={color}
+            linerId={selectedLinerId}
           />
         </div>
       </div>
@@ -329,6 +373,71 @@ export default function Calculator() {
                 <span>Bézs</span>
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* ══ MEDENCE BELSŐ FÓLIA SZÍNE (TOFOLIAMESTER.HU) ══ */}
+        <div className="max-w-5xl mx-auto bg-white/[0.08] backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-7 border border-white/10 mb-10 shadow-xl">
+          {/* Header & Active Color Display */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
+            <div>
+              <h3
+                style={{ fontFamily: "'Louvette Display', serif" }}
+                className="text-xl sm:text-2xl text-white font-semibold"
+              >
+                Válasszon medencefólia színt
+              </h3>
+            </div>
+
+            {/* Active Selected Color Indicator */}
+            {(() => {
+              const active = getLinerById(selectedLinerId);
+              return (
+                <div className="flex items-center gap-2.5 bg-black/30 px-3.5 py-1.5 rounded-full self-start sm:self-auto">
+                  <span
+                    className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm flex-shrink-0"
+                    style={{ backgroundColor: active?.colorHex }}
+                  />
+                  <span
+                    style={{ fontFamily: "Gotham, sans-serif" }}
+                    className="text-xs font-bold text-white"
+                  >
+                    {active?.name}
+                  </span>
+                  <span className="text-[10px] text-white/50">
+                    ({active?.series})
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Color Buttons Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 sm:gap-2.5">
+            {POOL_LINERS.filter(
+              (l) => linerCategory === "all" || l.category === linerCategory,
+            ).map((liner) => {
+              const isSelected = selectedLinerId === liner.id;
+              return (
+                <button
+                  key={liner.id}
+                  type="button"
+                  onClick={() => setSelectedLinerId(liner.id)}
+                  title={`${liner.name} (${liner.series})`}
+                  className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer border-none ${
+                    isSelected
+                      ? "bg-white text-[#2C4295] shadow-md font-bold ring-2 ring-[#F28C48]"
+                      : "bg-white/10 text-white/85 hover:bg-white/20"
+                  }`}
+                >
+                  <span
+                    className="w-3.5 h-3.5 rounded-full border border-black/20 flex-shrink-0 shadow-sm"
+                    style={{ backgroundColor: liner.colorHex }}
+                  />
+                  <span className="truncate">{liner.name}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -514,6 +623,81 @@ export default function Calculator() {
                 </div>
               )}
 
+              {/* Optional Pool Photo Upload */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label
+                    htmlFor="calc-photo"
+                    style={{ fontFamily: "Gotham, sans-serif" }}
+                    className="block text-xs font-medium text-white/80"
+                  >
+                    Fotó a medencéről / helyszínről (opcionális)
+                  </label>
+                  <span className="text-[10px] text-white/50">
+                    JPG, PNG, WebP (max. 10 MB)
+                  </span>
+                </div>
+
+                {!poolPhotoPreview ? (
+                  <label
+                    htmlFor="calc-photo"
+                    className="flex flex-col items-center justify-center gap-1.5 p-3.5 sm:p-4 rounded-xl border border-dashed border-white/25 hover:border-[#F28C48]/60 bg-white/[0.04] hover:bg-white/[0.07] transition-all cursor-pointer group text-center"
+                  >
+                    <input
+                      type="file"
+                      id="calc-photo"
+                      name="photo"
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                      onChange={handlePhotoChange}
+                      className="sr-only"
+                    />
+                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 group-hover:scale-110 group-hover:bg-[#F28C48] group-hover:text-white transition-all">
+                      <FiCamera className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-white/90 block">
+                        Kattintson vagy húzza ide a medence képét
+                      </span>
+                      <span className="text-[10.5px] text-white/50 font-light block">
+                        Segít kollégáinknak a legpontosabb előzetes ajánlat
+                        kidolgozásában
+                      </span>
+                    </div>
+                  </label>
+                ) : (
+                  <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white/10 border border-white/20">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/20 flex-shrink-0 bg-black/20">
+                        <img
+                          src={poolPhotoPreview}
+                          alt="Feltöltött medencefotó"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-xs font-semibold text-white block truncate">
+                          {poolPhoto?.name}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-medium block">
+                          ✓ Kép csatolva (
+                          {(poolPhoto?.size / (1024 * 1024)).toFixed(2)} MB)
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={removePhoto}
+                      title="Fotó eltávolítása"
+                      className="py-1.5 px-2.5 rounded-lg bg-white/10 hover:bg-red-500/20 text-white/75 hover:text-red-300 transition-all cursor-pointer border-none flex-shrink-0 flex items-center gap-1 text-[11px]"
+                    >
+                      <FiX className="w-3.5 h-3.5" />
+                      <span>Törlés</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Note */}
               <div>
                 <label
@@ -562,7 +746,8 @@ export default function Calculator() {
                   >
                     Adatkezelési Tájékoztatóban
                   </a>{" "}
-                  foglaltakat, és hozzájárulok a megadott adataim ajánlatadás / visszahívás céljából történő kezeléséhez.
+                  foglaltakat, és hozzájárulok a megadott adataim ajánlatadás /
+                  visszahívás céljából történő kezeléséhez.
                 </label>
               </div>
 
@@ -589,7 +774,10 @@ export default function Calculator() {
 
               <p className="text-center text-[11px] text-white/50 font-light mt-2">
                 A beállított méreteket ({Number(width).toFixed(1)}m ×{" "}
-                {Number(length).toFixed(1)}m) automatikusan csatoljuk.
+                {Number(length).toFixed(1)}m), a ponyva színét (
+                {color === "beige" ? "Bézs" : "Antracit"}) és a választott belső
+                fóliát ({getLinerById(selectedLinerId)?.name}) automatikusan
+                csatoljuk.
               </p>
             </form>
           )}
