@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Component } from "react";
 import dynamic from "next/dynamic";
 import confetti from "canvas-confetti";
 import {
@@ -125,6 +125,57 @@ const compressImageFile = async (file, maxDimension = 1920, quality = 0.82) => {
     img.src = objectUrl;
   });
 };
+
+// Error Boundary a 3D Canvas számára
+// Megakadályozza, hogy mobil böngésző háttérbe tétele/feloldása esetén a WebGL hiba az egész oldalt összeomoltsa
+class SceneErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, reloadKey: 0 };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.warn("Scene3D hiba elkapva az Error Boundary által:", error, errorInfo);
+  }
+
+  handleReload = () => {
+    this.setState((prev) => ({ hasError: false, reloadKey: prev.reloadKey + 1 }));
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full min-h-[360px] flex flex-col items-center justify-center text-white/80 p-6 text-center select-none">
+          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white/80 mb-3 shadow-md">
+            <FiRotateCw className="w-5 h-5" />
+          </div>
+          <p
+            style={{ fontFamily: "Gotham, sans-serif" }}
+            className="text-xs sm:text-sm font-medium text-white/90 mb-3"
+          >
+            A 3D nézet a telefon energiatakarékossága miatt szünetel.
+          </p>
+          <button
+            type="button"
+            onClick={this.handleReload}
+            className="px-5 py-2 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer border-none"
+          >
+            3D modell visszakapcsolása
+          </button>
+        </div>
+      );
+    }
+    return (
+      <React.Fragment key={this.state.reloadKey}>
+        {this.props.children}
+      </React.Fragment>
+    );
+  }
+}
 
 export default function Calculator() {
   // Continuous Sliders
@@ -303,12 +354,15 @@ export default function Calculator() {
       removePhoto();
 
       try {
-        confetti({
+        const confPromise = confetti({
           particleCount: 110,
           spread: 70,
           origin: { y: 0.6 },
           colors: ["#F28C48", "#FFFFFF", "#38BDF8", "#D4EDFC"],
         });
+        if (confPromise && typeof confPromise.catch === "function") {
+          confPromise.catch(() => {});
+        }
       } catch (err) {
         // Fallback if canvas-confetti is not loaded
       }
@@ -403,13 +457,15 @@ export default function Calculator() {
 
         {/* 3D Canvas directly floating on seamless navy background */}
         <div className="w-full h-full relative z-10">
-          <Scene3D
-            poolWidth={Number(width)}
-            poolLength={Number(length)}
-            coverState={Number(coverProgress)}
-            color={color}
-            linerId={selectedLinerId}
-          />
+          <SceneErrorBoundary>
+            <Scene3D
+              poolWidth={Number(width)}
+              poolLength={Number(length)}
+              coverState={Number(coverProgress)}
+              color={color}
+              linerId={selectedLinerId}
+            />
+          </SceneErrorBoundary>
         </div>
       </div>
 

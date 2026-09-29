@@ -284,8 +284,13 @@ function PoolGLBModel({ poolWidth = 4, poolLength = 8, coverState = 50, color = 
   }, [linerId, nodes, materials]);
 
   useFrame((state, delta) => {
-    // 1. Smooth lerping for parameters
-    const lerpSpeed = Math.min(1, delta * 8);
+    // Ha a WebGL környezet elveszett vagy a böngészőfül háttérben van, kihagyjuk a képkockát
+    if (state.gl.isContextLost) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+
+    // Telefon feloldásakor fellépő delta időugrás kivédése (max. 0.1 másodpercre korlátozzuk)
+    const safeDelta = Math.min(delta, 0.1);
+    const lerpSpeed = Math.min(1, safeDelta * 8);
     animState.current.width = THREE.MathUtils.lerp(animState.current.width, poolWidth, lerpSpeed);
     animState.current.length = THREE.MathUtils.lerp(animState.current.length, poolLength, lerpSpeed);
 
@@ -426,30 +431,35 @@ function PoolGLBModel({ poolWidth = 4, poolLength = 8, coverState = 50, color = 
 
     // 7. Water Surface Real-time Vertex Wave Animation
     if (nodes.WaterSurface && nodes.WaterSurface.geometry) {
-      const geo = nodes.WaterSurface.geometry;
-      const posAttr = geo.attributes.position;
+      try {
+        const geo = nodes.WaterSurface.geometry;
+        const posAttr = geo.attributes.position;
+        if (!posAttr) return;
 
-      if (!originalWaterPositions.current) {
-        originalWaterPositions.current = new Float32Array(posAttr.array);
+        if (!originalWaterPositions.current || originalWaterPositions.current.length !== posAttr.array.length) {
+          originalWaterPositions.current = new Float32Array(posAttr.array);
+        }
+
+        const orig = originalWaterPositions.current;
+        const time = state.clock.getElapsedTime();
+
+        for (let i = 0; i < posAttr.count; i++) {
+          const x = orig[i * 3];
+          const z = orig[i * 3 + 2];
+          // Dense, smaller, multi-directional ripples for sparkling light distortion
+          const wave =
+            Math.sin(x * 12.0 + time * 3.4) * 0.0035 +
+            Math.cos(z * 10.5 + time * 2.8) * 0.0035 +
+            Math.sin((x + z) * 8.5 + time * 2.1) * 0.0025 +
+            Math.cos((x - z) * 7.0 + time * 1.7) * 0.002;
+
+          posAttr.setY(i, orig[i * 3 + 1] + wave);
+        }
+        posAttr.needsUpdate = true;
+        geo.computeVertexNormals();
+      } catch (waveErr) {
+        // Prevent wave calculation errors from crashing the component
       }
-
-      const orig = originalWaterPositions.current;
-      const time = state.clock.getElapsedTime();
-
-      for (let i = 0; i < posAttr.count; i++) {
-        const x = orig[i * 3];
-        const z = orig[i * 3 + 2];
-        // Dense, smaller, multi-directional ripples for sparkling light distortion
-        const wave =
-          Math.sin(x * 12.0 + time * 3.4) * 0.0035 +
-          Math.cos(z * 10.5 + time * 2.8) * 0.0035 +
-          Math.sin((x + z) * 8.5 + time * 2.1) * 0.0025 +
-          Math.cos((x - z) * 7.0 + time * 1.7) * 0.002;
-
-        posAttr.setY(i, orig[i * 3 + 1] + wave);
-      }
-      posAttr.needsUpdate = true;
-      geo.computeVertexNormals();
     }
   });
 
@@ -513,8 +523,35 @@ export default function Scene3D({
       className="w-full h-full relative"
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* React Three Fiber Canvas */}
-      <Canvas shadows className="w-full h-full cursor-grab active:cursor-grabbing">
+      {/* React Three Fiber Canvas with WebGL Context Lost recovery */}
+      <Canvas
+        shadows
+        gl={{
+          powerPreference: 'default',
+          preserveDrawingBuffer: false,
+          antialias: true,
+        }}
+        onCreated={({ gl }) => {
+          const canvas = gl.domElement;
+          if (canvas) {
+            const handleContextLost = (e) => {
+              e.preventDefault(); // Megakadályozza a WebGL végleges összeomlását telefon feloldásakor
+              console.warn('Scene3D: WebGL context lost - preventDefault called to allow restore');
+            };
+            const handleContextRestored = () => {
+              console.log('Scene3D: WebGL context restored successfully');
+              try {
+                gl.resetState();
+              } catch (err) {
+                console.warn('Error resetting GL state:', err);
+              }
+            };
+            canvas.addEventListener('webglcontextlost', handleContextLost, false);
+            canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+          }
+        }}
+        className="w-full h-full cursor-grab active:cursor-grabbing"
+      >
         <PerspectiveCamera makeDefault position={[5.8, 4.6, 7.2]} fov={42} />
 
         {/* Balanced 360 Studio Lighting */}
