@@ -39,6 +39,93 @@ const Scene3D = dynamic(() => import("./Scene3D"), {
   ),
 });
 
+// Kliens oldali automatikus képtömörítés HTML5 Canvas segítségével
+// Megakadályozza a Vercel/szerver 4.5 MB kéréskorlátját és a lassú feltöltést
+const compressImageFile = async (file, maxDimension = 1920, quality = 0.82) => {
+  if (!file) return file;
+  const isImage =
+    file.type.startsWith("image/") ||
+    /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name);
+  if (!isImage) {
+    return file;
+  }
+
+  // Ha már eleve 400 KB alatt van és webes formátum, nem szükséges tömöríteni
+  if (
+    file.size < 400 * 1024 &&
+    (file.type === "image/jpeg" ||
+      file.type === "image/png" ||
+      file.type === "image/webp")
+  ) {
+    return file;
+  }
+
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      try {
+        let { width, height } = img;
+        if (!width || !height) {
+          return resolve(file);
+        }
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          return resolve(file);
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              return resolve(file);
+            }
+            const cleanBase = (file.name || "medence-foto")
+              .replace(/\.[^/.]+$/, "")
+              .replace(/[^a-zA-Z0-9_-]/g, "_");
+            const compressedFile = new File([blob], `${cleanBase}.jpg`, {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          "image/jpeg",
+          quality,
+        );
+      } catch (err) {
+        console.warn("Client image compression fallback:", err);
+        resolve(file);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      console.warn("Image load failed for compression, using original file");
+      resolve(file);
+    };
+
+    img.src = objectUrl;
+  });
+};
+
 export default function Calculator() {
   // Continuous Sliders
   const [width, setWidth] = useState(4.0); // 2.5m - 6.0m (step 0.1)
@@ -64,23 +151,58 @@ export default function Calculator() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Optional Pool Photo Attachment
+  // Optional Pool Photo Attachment (kliens oldali tömörítéssel támogatott 20 MB-ig)
   const [poolPhoto, setPoolPhoto] = useState(null);
   const [poolPhotoPreview, setPoolPhotoPreview] = useState(null);
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
+  const [photoDetails, setPhotoDetails] = useState(null);
 
-  const handlePhotoChange = (e) => {
+  const handlePhotoChange = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 12 * 1024 * 1024) {
-        setErrorMessage(
-          "A kiválasztott fotó mérete túl nagy (maximum 10 MB engedélyezett).",
-        );
-        return;
+    if (!file) return;
+
+    // Engedélyezett méret: akár 20 MB (a böngésző tömöríti ~300-800 KB-ra)
+    if (file.size > 20 * 1024 * 1024) {
+      setErrorMessage(
+        "A kiválasztott fotó mérete túl nagy (maximum 20 MB engedélyezett). Kérjük válasszon kisebb képet!",
+      );
+      return;
+    }
+
+    setErrorMessage("");
+    setIsCompressingPhoto(true);
+
+    try {
+      const originalSizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      const compressed = await compressImageFile(file, 1920, 0.82);
+      const compressedSizeMb = (compressed.size / (1024 * 1024)).toFixed(2);
+
+      if (poolPhotoPreview) {
+        URL.revokeObjectURL(poolPhotoPreview);
       }
-      setErrorMessage("");
+
+      setPoolPhoto(compressed);
+      const previewUrl = URL.createObjectURL(compressed);
+      setPoolPhotoPreview(previewUrl);
+      setPhotoDetails({
+        name: file.name,
+        originalSize: originalSizeMb,
+        compressedSize: compressedSizeMb,
+        isCompressed: file.size !== compressed.size,
+      });
+    } catch (err) {
+      console.error("Photo processing error:", err);
       setPoolPhoto(file);
-      const url = URL.createObjectURL(file);
-      setPoolPhotoPreview(url);
+      setPoolPhotoPreview(URL.createObjectURL(file));
+      setPhotoDetails({
+        name: file.name,
+        originalSize: (file.size / (1024 * 1024)).toFixed(2),
+        compressedSize: (file.size / (1024 * 1024)).toFixed(2),
+        isCompressed: false,
+      });
+    } finally {
+      setIsCompressingPhoto(false);
+      e.target.value = "";
     }
   };
 
@@ -90,6 +212,7 @@ export default function Calculator() {
     }
     setPoolPhoto(null);
     setPoolPhotoPreview(null);
+    setPhotoDetails(null);
   };
 
   useEffect(() => {
@@ -145,10 +268,35 @@ export default function Calculator() {
         body: fd,
       });
 
-      const data = await res.json();
+      let data = {};
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          console.warn("JSON parszolási figyelmeztetés:", jsonErr);
+        }
+      }
 
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Hiba történt az üzenet küldésekor.");
+      if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error(
+            "A feltöltött fotó mérete túl nagy a szerver számára. Kérjük válasszon kisebb képet!",
+          );
+        }
+        if (res.status === 504) {
+          throw new Error(
+            "A kérés időtúllépés miatt megszakadt. Kérjük próbálja meg újra!",
+          );
+        }
+        throw new Error(
+          data?.error ||
+            "Nem sikerült elküldeni a megkeresést. Kérjük próbálja meg később!",
+        );
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       setIsSubmitted(true);
@@ -166,10 +314,18 @@ export default function Calculator() {
       }
     } catch (err) {
       console.error("Form submit error:", err);
-      setErrorMessage(
-        err.message ||
-          "Nem sikerült elküldeni a megkeresést. Kérjük próbálja meg később!",
-      );
+      // Garantáljuk, hogy soha ne jelenjen meg rejtélyes technikai JSON hibaüzenet a látogatónak
+      let msg = err?.message || "";
+      if (
+        !msg ||
+        msg.includes("JSON") ||
+        msg.includes("Unexpected token") ||
+        msg.includes("is not valid")
+      ) {
+        msg =
+          "Nem sikerült elküldeni a megkeresést. Kérjük próbálja meg újra, vagy vegye fel velünk a kapcsolatot telefonon!";
+      }
+      setErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -633,12 +789,17 @@ export default function Calculator() {
                   >
                     Fotó a medencéről / helyszínről (opcionális)
                   </label>
-                  <span className="text-[10px] text-white/50">
-                    JPG, PNG, WebP (max. 10 MB)
+                  <span className="text-[10px] text-white/60">
+                    JPG, PNG, WebP (max. 20 MB)
                   </span>
                 </div>
 
-                {!poolPhotoPreview ? (
+                {isCompressingPhoto ? (
+                  <div className="flex items-center justify-center gap-2.5 p-4 rounded-xl border border-white/20 bg-white/10 text-white/80 text-xs">
+                    <div className="w-4 h-4 border-2 border-[#F28C48] border-t-transparent rounded-full animate-spin" />
+                    <span>Fotó optimalizálása folyamatban...</span>
+                  </div>
+                ) : !poolPhotoPreview ? (
                   <label
                     htmlFor="calc-photo"
                     className="flex flex-col items-center justify-center gap-1.5 p-3.5 sm:p-4 rounded-xl border border-dashed border-white/25 hover:border-[#F28C48]/60 bg-white/[0.04] hover:bg-white/[0.07] transition-all cursor-pointer group text-center"
@@ -659,8 +820,8 @@ export default function Calculator() {
                         Kattintson vagy húzza ide a medence képét
                       </span>
                       <span className="text-[10.5px] text-white/50 font-light block">
-                        Segít kollégáinknak a legpontosabb előzetes ajánlat
-                        kidolgozásában
+                        Akár 15-20 MB-os telefonos fotó is feltölthető, a
+                        rendszerünk automatikusan optimalizálja
                       </span>
                     </div>
                   </label>
@@ -676,11 +837,20 @@ export default function Calculator() {
                       </div>
                       <div className="min-w-0">
                         <span className="text-xs font-semibold text-white block truncate">
-                          {poolPhoto?.name}
+                          {photoDetails?.name || poolPhoto?.name}
                         </span>
                         <span className="text-[10px] text-emerald-400 font-medium block">
-                          ✓ Kép csatolva (
-                          {(poolPhoto?.size / (1024 * 1024)).toFixed(2)} MB)
+                          {photoDetails?.isCompressed ? (
+                            <>
+                              ✓ Kép optimalizálva ({photoDetails.originalSize}{" "}
+                              MB ➔ {photoDetails.compressedSize} MB)
+                            </>
+                          ) : (
+                            <>
+                              ✓ Kép csatolva (
+                              {(poolPhoto?.size / (1024 * 1024)).toFixed(2)} MB)
+                            </>
+                          )}
                         </span>
                       </div>
                     </div>
@@ -754,11 +924,13 @@ export default function Calculator() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isCompressingPhoto}
                 className="w-full mt-1 py-3.5 px-6 rounded-xl bg-[#F28C48] hover:bg-[#e07936] text-white font-bold text-sm tracking-wide shadow-lg shadow-orange-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer border-none disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isCompressingPhoto ? (
+                  <span>Fotó előkészítése...</span>
                 ) : formMode === "email" ? (
                   <>
                     <FiSend className="w-4 h-4" />

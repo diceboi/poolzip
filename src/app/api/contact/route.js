@@ -86,6 +86,13 @@ export async function POST(request) {
     // Process optional pool photo attachment
     let photoAttachedInfo = null;
     if (photoFile && typeof photoFile === 'object' && photoFile.size > 0) {
+      if (photoFile.size > 25 * 1024 * 1024) {
+        return NextResponse.json(
+          { error: 'A csatolt fotó mérete meghaladja a megengedett 20 MB-os határt.' },
+          { status: 400 }
+        );
+      }
+
       try {
         const rawBuffer = Buffer.from(await photoFile.arrayBuffer());
         let optimizedBuffer = rawBuffer;
