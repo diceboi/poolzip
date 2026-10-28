@@ -8,7 +8,7 @@ const COMPARISON_CARDS = [
   {
     title: "Polikarbonát búra",
     badge: "Hagyományos",
-    image: "/policarbonate.jpg",
+    image: "/policarbonate.webp",
     alt: "Polikarbonát búra fedés",
     bgColor: "bg-[#D4EDFC]",
     titleColor: "text-[#2C4295]",
@@ -115,7 +115,8 @@ export default function Comparison() {
             style={{ fontFamily: "Gotham, sans-serif" }}
             className="text-slate-600 text-sm md:text-base font-light leading-relaxed max-w-2xl mx-auto"
           >
-            Hogyan teljesít a Poolzip a hagyományos polikarbonát búrákkal és a műanyag rolós fedésekkel szemben?
+            Hogyan teljesít a Poolzip a hagyományos polikarbonát búrákkal és a
+            műanyag rolós fedésekkel szemben?
           </p>
         </div>
 
